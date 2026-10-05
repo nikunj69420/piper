@@ -1,0 +1,1774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Piper Warrior II systems lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#e7ecf0;--panel:#f5f7f9;--raise:#ffffff;--ink:#14202b;--mute:#4f606d;--line:#bcc8d2;--hair:#d5dde4;
+  --fuel:#1c72cf;--oil:#b86f08;--elec:#a98400;--air:#12908a;--hyd:#cf3427;
+  --ok:#1b9150;--warn:#c58500;--bad:#cf3427;
+  --metal:#7e8f9d;--metal2:#b9c4ce;--glass:#dde6ee;--gface:#fbfcfd;--needle:#14202b;
+  --head:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e151c;--panel:#16202a;--raise:#1e2a36;--ink:#e9eff4;--mute:#90a2b0;--line:#34465a;--hair:#263442;
+    --fuel:#4fa3ff;--oil:#f0ad3a;--elec:#f4d34f;--air:#4cd4cb;--hyd:#ff6a5b;
+    --ok:#46d08a;--warn:#f0b43a;--bad:#ff6a5b;
+    --metal:#6c7f90;--metal2:#3f505e;--glass:#1d2a35;--gface:#0b1117;--needle:#f3f6f8;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e151c;--panel:#16202a;--raise:#1e2a36;--ink:#e9eff4;--mute:#90a2b0;--line:#34465a;--hair:#263442;
+  --fuel:#4fa3ff;--oil:#f0ad3a;--elec:#f4d34f;--air:#4cd4cb;--hyd:#ff6a5b;
+  --ok:#46d08a;--warn:#f0b43a;--bad:#ff6a5b;
+  --metal:#6c7f90;--metal2:#3f505e;--glass:#1d2a35;--gface:#0b1117;--needle:#f3f6f8;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body);-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:210px}
+.brand svg{width:44px;height:30px;flex:none}
+.brand b{display:block;font:700 22px/1 var(--head);letter-spacing:.2px}
+.brand small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.strip{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.chip{padding:3px 10px 4px;border:1px solid var(--line);border-radius:8px;background:var(--raise);min-width:74px}
+.chip small{display:block;font-size:11px;color:var(--mute);line-height:1.2}
+.chip b{font:600 19px/1.1 var(--head);font-variant-numeric:tabular-nums}
+.chip.warn{border-color:var(--warn)}.chip.warn b{color:var(--warn)}
+.chip.bad{border-color:var(--bad)}.chip.bad b{color:var(--bad)}
+.bar-r{display:flex;gap:8px;align-items:center}
+.bar-r label{font-size:13px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.bar-r select,.bar-r button{background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:5px 9px;cursor:pointer}
+
+.shell{display:grid;grid-template-columns:208px minmax(0,1fr);align-items:start}
+nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);padding:16px 10px 24px 14px;display:flex;flex-direction:column;gap:4px}
+nav button{display:block;width:100%;text-align:left;padding:9px 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;font:600 17px/1.15 var(--head);letter-spacing:.2px;color:var(--mute)}
+nav button:hover{background:var(--panel);color:var(--ink)}
+nav button[aria-current=page]{background:var(--ink);color:var(--bg)}
+nav .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px}
+
+main{padding:18px 22px 60px 8px;min-width:0}
+.sys{display:none}.sys.on{display:block}
+.sys>h1{margin:0;font:700 36px/1.05 var(--head);letter-spacing:.2px}
+.lead{margin:6px 0 16px;color:var(--mute);max-width:70ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:18px;align-items:start}
+figure.fig{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;overflow:hidden}
+figure.fig svg,figure.fig canvas{display:block;width:100%;height:auto}
+svg text{font-family:var(--body);user-select:none}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h3{margin:0 0 8px;font:700 21px/1.1 var(--head)}
+.card p{margin:6px 0}
+.card .note{font-size:13px;color:var(--mute)}
+.say{margin:0;padding:10px 12px;border-left:4px solid var(--ink);background:var(--raise);border-radius:0 8px 8px 0;min-height:3.2em}
+
+.sw{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:8px 10px;background:var(--raise);border:1px solid var(--line);border-radius:8px;cursor:pointer;text-align:left}
+.sw i{width:10px;height:10px;border-radius:50%;background:var(--hair);border:1px solid var(--metal);flex:none}
+.sw span{flex:1}
+.sw b{font:600 13px var(--head);color:var(--mute);letter-spacing:.5px}
+.sw[aria-pressed=true]{border-color:var(--lamp,var(--ok))}
+.sw[aria-pressed=true] i{background:var(--lamp,var(--ok));box-shadow:0 0 8px var(--lamp,var(--ok));border-color:transparent}
+.sw[aria-pressed=true] b{color:var(--ink)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.rng{margin:8px 0}
+.rng label{font-size:14px}
+.rng output{font:600 16px var(--head);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--ink);margin:2px 0;height:28px}
+.segw{margin:8px 0}.segw .lab{font-size:14px;margin-bottom:3px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--raise)}
+.seg button{flex:1;padding:7px 4px;border:0;border-right:1px solid var(--line);background:transparent;cursor:pointer;font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--raise);cursor:pointer;margin:3px 4px 3px 0;font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.down,.btn:active{background:var(--ink);color:var(--bg)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.big{padding:12px 16px;font-size:16px}
+.btns{display:flex;flex-wrap:wrap;margin:6px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.chain{list-style:none;margin:6px 0 0;padding:0;counter-reset:s}
+.chain li{position:relative;padding:5px 4px 5px 32px;color:var(--mute);counter-increment:s;font-size:14px}
+.chain li::before{content:counter(s);position:absolute;left:2px;top:6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--metal);font:600 12px/18px var(--head);text-align:center}
+.chain li.on{color:var(--ink)}
+.chain li.on::before{background:var(--ok);border-color:var(--ok);color:#fff}
+.facts{margin:0;padding:0;list-style:none;font-size:14px}
+.facts li{padding:4px 0;border-top:1px solid var(--hair)}
+.facts li:first-child{border-top:0}
+.ann{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.ann span{padding:2px 9px;border-radius:6px;border:1px solid var(--line);font:600 13px var(--head);color:var(--mute);letter-spacing:.4px}
+.ann span.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.ann span.on.amber{background:var(--warn);border-color:var(--warn);color:#111}
+.ann span.on.green{background:var(--ok);border-color:var(--ok);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin-top:8px}
+.legend i{display:inline-block;width:18px;height:5px;border-radius:3px;margin-right:6px;vertical-align:2px}
+.hot{cursor:pointer}
+.hot circle{transition:r .15s}
+.hot:hover circle.d,.hot:focus-visible circle.d{r:17}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t td,table.t th{padding:4px 6px;border-top:1px solid var(--hair);text-align:left}
+table.t td:last-child,table.t th:last-child{text-align:right}
+.pass{color:var(--ok);font-weight:600}.fail{color:var(--bad);font-weight:600}
+.cup{display:flex;gap:10px;align-items:center;margin-top:6px;min-height:54px}
+.cup .glass{width:34px;height:52px;border:2px solid var(--metal);border-top:0;border-radius:0 0 8px 8px;position:relative;overflow:hidden;background:var(--glass)}
+.cup .glass i{position:absolute;left:0;right:0;bottom:0}
+.sr{position:absolute;left:-9999px}
+
+@media (max-width:1000px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 0px);flex-direction:row;overflow-x:auto;padding:8px 12px;background:var(--bg);z-index:15;border-bottom:1px solid var(--line);position:relative}
+  nav button{white-space:nowrap;width:auto;flex:none}
+  main{padding:14px 12px 60px}
+  .sys>h1{font-size:30px}
+  .bar{padding:8px 12px;gap:8px}
+  .brand{min-width:0}.brand small{display:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand">
+    <svg viewBox="0 0 88 60" aria-hidden="true"><g fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M44 6c4 0 6 4 6 10v26l-3 10h-6l-3-10V16c0-6 2-10 6-10z" fill="var(--raise)"/><path d="M6 20l32 2M82 20l-32 2"/><path d="M30 48h28"/></g></svg>
+    <div><b>Piper Warrior II systems lab</b><small>PA-28-161 · Lycoming O-320 · fixed gear · training aid</small></div>
+  </div>
+  <div class="strip" id="strip" aria-label="Live aircraft status"></div>
+  <div class="bar-r">
+    <label>Time <select id="ts" aria-label="Simulation speed for fuel burn and battery"><option value="1">×1</option><option value="10" selected>×10</option><option value="60">×60</option></select></label>
+    <button id="snd" type="button" aria-pressed="false">Sound off</button>
+    <button id="thm" type="button">Theme</button>
+  </div>
+</header>
+<div class="shell">
+  <nav id="nav" aria-label="Aircraft systems"></nav>
+  <main id="main"></main>
+</div>
+<script>
+'use strict';
+/* ---------- tiny helpers ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=(s,p)=>(p||document).querySelector(s);
+function el(tag,attrs,parent,html){const e=document.createElement(tag);if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);if(html!=null)e.innerHTML=html;return e}
+function sv(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);if(text!=null)e.textContent=text;return e}
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const rad=d=>d*Math.PI/180;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const reduce=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const f0=v=>Math.round(v).toString();
+const f1=v=>v.toFixed(1);
+function tx(p,x,y,s,o){o=o||{};return sv('text',Object.assign({x,y,'text-anchor':o.a||'middle','font-size':o.s||13,fill:o.c||'var(--ink)','font-weight':o.w||500},o.x||{}),p,s)}
+function box(p,x,y,w,h,o){o=o||{};return sv('rect',{x,y,width:w,height:h,rx:o.rx==null?8:o.rx,fill:o.f||'var(--raise)',stroke:o.s||'var(--metal)','stroke-width':o.sw||1.5},p)}
+function line(p,x1,y1,x2,y2,c,w,o){return sv('line',Object.assign({x1,y1,x2,y2,stroke:c||'var(--metal)','stroke-width':w||2,'stroke-linecap':'round'},o||{}),p)}
+
+/* ---------- shared aircraft state ---------- */
+function initState(){return{
+  ts:10,
+  bat:false,alt:false,av:false,
+  sw:{nav:false,strobe:false,beacon:false,land:false,pitotHeat:false,cabin:false,fuelPump:false},
+  cb:{nav:true,strobe:true,beacon:true,land:true,pitotHeat:true,cabin:true,avionics:true,fuelPump:true,inst:true},
+  altFail:false,soc:100,volts:0,batI:0,altOut:0,load:0,busLive:false,loadOn:{},instOn:false,
+  sel:'L',fuelL:24,fuelR:24,ventL:false,ventR:false,vacL:0,vacR:0,waterL:0,waterLine:0,fuelOK:false,fuelP:0,engPumpFail:false,feedL:true,feedR:true,gph:0,
+  mixture:100,thr:0,carb:false,ign:'BOTH',starter:false,prime:0,flooded:false,floodClear:0,crankT:0,
+  rpm:0,running:false,cranking:false,starve:0,rough:0,ice:0,humid:false,foulR:false,why:'',stopWhy:'',magDrop:0,
+  oilQty:8,oilLeak:false,pumpFail:false,filterClog:false,oilP:0,oilT:70,
+  flapSel:0,flap:0,
+  amb:70
+}}
+let S=initState();
+
+/* ---------- registries ---------- */
+const syncs={};            // per-tab UI sync functions
+const draw={};             // per-tab draw functions
+const resets=[];           // per-tab reset functions
+const pipes=[];
+function reg(tab,fn){(syncs[tab]=syncs[tab]||[]).push(fn)}
+
+/* ---------- controls ---------- */
+function sw(tab,parent,label,get,set,lamp){
+  const b=el('button',{class:'sw',type:'button','aria-pressed':'false'},parent,'<i></i><span></span><b></b>');
+  b.children[1].textContent=label;
+  if(lamp)b.style.setProperty('--lamp','var(--'+lamp+')');
+  b.onclick=()=>set(!get());
+  reg(tab,()=>{const v=!!get();b.setAttribute('aria-pressed',v);b.children[2].textContent=v?'ON':'OFF'});
+  return b}
+function rng(tab,parent,label,min,max,step,get,set,fmt){
+  const w=el('div',{class:'rng'},parent,'<div class="row"><label></label><output></output></div><input type="range">');
+  const lab=w.querySelector('label'),out=w.querySelector('output'),inp=w.querySelector('input');
+  lab.textContent=label;inp.min=min;inp.max=max;inp.step=step;inp.value=get();inp.setAttribute('aria-label',label);
+  inp.addEventListener('input',()=>set(+inp.value));
+  reg(tab,()=>{const v=get();if(document.activeElement!==inp&&+inp.value!==v)inp.value=v;out.textContent=fmt?fmt(v):v});
+  inp._w=w;return inp}
+function seg(tab,parent,label,opts,get,set){
+  const w=el('div',{class:'segw'},parent,'<div class="lab"></div><div class="seg" role="group"></div>');
+  w.firstChild.textContent=label;const g=w.lastChild;g.setAttribute('aria-label',label);
+  const bs=opts.map(o=>{const b=el('button',{type:'button','aria-pressed':'false'},g);b.textContent=o[1];b.onclick=()=>set(o[0]);return [o[0],b]});
+  reg(tab,()=>{const c=get();bs.forEach(x=>x[1].setAttribute('aria-pressed',x[0]===c))});
+  return w}
+function btn(parent,label,fn,cls){const b=el('button',{type:'button',class:'btn '+(cls||'')},parent);b.textContent=label;b.onclick=fn;return b}
+function hold(parent,label,on,off,cls){
+  const b=btn(parent,label,function(){},cls);
+  const up=()=>{if(b.classList.contains('down')){b.classList.remove('down');off()}};
+  b.onpointerdown=e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}b.classList.add('down');on()};
+  b.onpointerup=up;b.onpointercancel=up;b.onlostpointercapture=up;
+  b.onkeydown=e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();b.classList.add('down');on()}};
+  b.onkeyup=e=>{if(e.key===' '||e.key==='Enter')up()};
+  return b}
+function card(parent,title){const c=el('section',{class:'card'},parent);if(title)el('h3',null,c).textContent=title;return c}
+function chain(parent){const ol=el('ol',{class:'chain'},parent);
+  return{set(list){const key=list.map(x=>x[0]+(x[1]?'1':'0')).join('|');if(key===ol._k)return;ol._k=key;ol.innerHTML='';list.forEach(x=>{const li=el('li',x[1]?{class:'on'}:null,ol);li.textContent=x[0]})}}}
+function saybox(parent){const p=el('p',{class:'say','aria-live':'polite'},parent);return{set(t){if(p._t!==t){p._t=t;p.textContent=t}}}}
+function ann(parent,names){const d=el('div',{class:'ann'},parent);const m={};names.forEach(n=>{m[n[0]]=el('span',null,d);m[n[0]].textContent=n[1]});return{set(id,on,cls){const s=m[id];s.className=on?('on '+(cls||'')):''}}}
+function facts(parent,list){const u=el('ul',{class:'facts'},parent);list.forEach(t=>{el('li',null,u).textContent=t});return u}
+
+/* ---------- gauges ---------- */
+function polar(r,a){const t=rad(a);return[r*Math.sin(t),-r*Math.cos(t)]}
+function arcPath(r,a0,a1){const p0=polar(r,a0),p1=polar(r,a1);return'M'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+'A'+r+' '+r+' 0 '+(Math.abs(a1-a0)>180?1:0)+' 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)}
+function gauge(parent,cx,cy,R,o){
+  const g=sv('g',{transform:'translate('+cx+' '+cy+')'},parent);
+  sv('circle',{r:R,fill:'var(--gface)',stroke:'var(--metal)','stroke-width':R*0.05},g);
+  const a0=o.a0==null?-130:o.a0,a1=o.a1==null?130:o.a1,min=o.min,max=o.max;
+  const ang=v=>a0+(clamp(v,min,max)-min)/(max-min)*(a1-a0);
+  (o.bands||[]).forEach(b=>sv('path',{d:arcPath(R*0.86,ang(b[0]),ang(b[1])),stroke:b[2],'stroke-width':R*0.07,fill:'none'},g));
+  (o.ticks||[]).forEach(t=>{const a=ang(t[0]);const p0=polar(R*0.78,a),p1=polar(R*0.68,a);line(g,p0[0],p0[1],p1[0],p1[1],'var(--ink)',1.5);
+    if(t[1]!=null){const q=polar(R*0.54,a);tx(g,q[0],q[1]+R*0.05,t[1],{s:R*0.17})}});
+  if(o.title)tx(g,0,R*0.56,o.title,{s:R*0.14,c:'var(--mute)'});
+  const val=tx(g,0,R*0.82,'',{s:R*0.19,w:600});
+  const nd=sv('g',{},g);sv('path',{d:'M'+(-R*0.04)+' 0L0 '+(-R*0.76)+'L'+(R*0.04)+' 0Z',fill:'var(--needle)'},nd);
+  sv('circle',{r:R*0.08,fill:'var(--metal)'},g);
+  return{g,set(v,t){nd.setAttribute('transform','rotate('+ang(v).toFixed(1)+')');const s=t!=null?t:(o.fmt?o.fmt(v):f0(v));if(val._s!==s){val._s=s;val.textContent=s}}}}
+
+/* ---------- animated pipes ---------- */
+function pipe(tab,parent,d,color,w,o){
+  o=o||{};w=w||6;
+  const base=sv('path',{d,stroke:color,'stroke-width':w,fill:'none','stroke-opacity':0.25,'stroke-linecap':'round','stroke-linejoin':'round'},parent);
+  const fl=sv('path',{d,stroke:color,'stroke-width':w*0.6,fill:'none','stroke-dasharray':'2 13','stroke-linecap':'round','stroke-linejoin':'round',opacity:0},parent);
+  const p={tab,base,fl,off:0,spd:0,on:false,set(speed,op){this.spd=speed;const on=speed>0.01;if(on!==this.on){this.on=on;fl.setAttribute('opacity',on?(op==null?1:op):0);base.setAttribute('stroke-opacity',on?0.55:0.25)}}};
+  pipes.push(p);return p}
+function tickPipes(dt,cur){for(const p of pipes){if(p.tab===cur&&p.spd>0.01){p.off-=p.spd*dt*(reduce?0.25:1);p.fl.setAttribute('stroke-dashoffset',p.off.toFixed(1))}}}
+
+/* ---------- navigation ---------- */
+const TABS=[
+  {id:'home',name:'Overview',c:'ink'},
+  {id:'engine',name:'Engine & ignition',c:'hyd'},
+  {id:'fuel',name:'Fuel',c:'fuel'},
+  {id:'oil',name:'Oil',c:'oil'},
+  {id:'elec',name:'Electrical',c:'elec'},
+  {id:'flaps',name:'Flaps',c:'air'},
+  {id:'ctrl',name:'Flight controls',c:'air'},
+  {id:'brakes',name:'Brakes & steering',c:'hyd'},
+  {id:'pitot',name:'Pitot-static & vacuum',c:'air'}
+];
+const build={};
+let cur='home';
+function show(id){
+  cur=id;
+  document.querySelectorAll('.sys').forEach(s=>s.classList.toggle('on',s.id==='s-'+id));
+  document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.id===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  try{history.replaceState(null,'','#'+id)}catch(_){}
+  window.scrollTo(0,0);
+}
+function mkSection(t,title,lead){
+  const s=el('section',{class:'sys',id:'s-'+t},$('#main'));
+  el('h1',null,s).textContent=title;
+  el('p',{class:'lead'},s).textContent=lead;
+  const g=el('div',{class:'grid'},s);
+  const fig=el('figure',{class:'fig'},g);
+  const side=el('div',{class:'side'},g);
+  return{s,fig,side}}
+function mkSvg(fig,w,h,label){return sv('svg',{viewBox:'0 0 '+w+' '+h,role:'img','aria-label':label},fig)}
+/* ---------- OVERVIEW ---------- */
+function presetCold(){
+  const ts=S.ts;Object.assign(S,initState());S.ts=ts;
+  resets.forEach(f=>f());
+}
+function presetRunning(){
+  presetCold();
+  S.bat=true;S.alt=true;S.running=true;S.rpm=700;S.thr=0;S.oilT=125;S.oilP=45;S.volts=14;S.soc=95;
+}
+build.home=function(){
+  const {fig,side}=mkSection('home','Learn the Piper Warrior II one system at a time',
+    'Pick a system, move its controls, and watch what flows, switches or turns. Every system shares the same aircraft: start the engine on one page and the oil, electrical and fuel pages all respond.');
+  const svg=mkSvg(fig,760,480,'Top view of a Piper Warrior II with a button on each system');
+  const g=sv('g',null,svg);
+  const fill='var(--raise)',st='var(--metal)';
+  sv('path',{d:'M380 62C398 62 408 78 410 110L412 190L400 340L392 420L380 428L368 420L360 340L348 190L350 110C352 78 362 62 380 62Z',fill,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'350,165 60,172 60,232 350,236',fill,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'410,165 700,172 700,232 410,236',fill,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'352,380 250,388 250,418 354,414',fill,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'408,380 510,388 510,418 406,414',fill,stroke:st,'stroke-width':2},g);
+  sv('rect',{x:376,y:350,width:8,height:76,fill:'var(--metal2)',stroke:st},g);
+  [[60,214,150,220,150,233,60,232],[700,214,610,220,610,233,700,232]].forEach(p=>sv('polygon',{points:p[0]+','+p[1]+' '+p[2]+','+p[3]+' '+p[4]+','+p[5]+' '+p[6]+','+p[7],fill:'var(--metal2)',stroke:st},g));
+  [[165,223,335,235,335,226,165,215],[595,223,425,235,425,226,595,215]].forEach(p=>sv('polygon',{points:p[0]+','+p[1]+' '+p[2]+','+p[3]+' '+p[4]+','+p[5]+' '+p[6]+','+p[7],fill:'var(--metal2)',stroke:st},g));
+  sv('ellipse',{cx:380,cy:58,rx:62,ry:4,fill:'var(--metal)',opacity:.45},g);
+  [[338,262],[422,262]].forEach(p=>sv('rect',{x:p[0]-6,y:p[1]-14,width:12,height:28,rx:3,fill:'var(--ink)',opacity:.75},g));
+  sv('rect',{x:374,y:96,width:12,height:20,rx:3,fill:'var(--ink)',opacity:.0},g);
+  const hs=[
+    ['engine',380,96,'Engine & ignition',428,100,'start'],
+    ['oil',380,124,'Oil',428,128,'start'],
+    ['elec',380,152,'Electrical',332,156,'end'],
+    ['fuel',210,198,'Fuel',210,152,'middle'],
+    ['fuel',550,198,'',0,0,''],
+    ['flaps',265,226,'Flaps',265,262,'middle'],
+    ['flaps',495,226,'',0,0,''],
+    ['ctrl',105,222,'Flight controls',105,262,'middle'],
+    ['ctrl',655,222,'',0,0,''],
+    ['ctrl',380,400,'Flight controls',420,444,'start'],
+    ['brakes',338,288,'Brakes & steering',318,312,'end'],
+    ['brakes',422,288,'',0,0,''],
+    ['pitot',150,236,'Pitot-static & vacuum',150,356,'middle']
+  ];
+  hs.forEach(h=>{
+    const t=TABS.find(x=>x.id===h[0]);
+    const a=sv('g',{class:'hot',tabindex:0,role:'button','aria-label':'Open '+t.name},svg);
+    if(h[3]){const w=h[3].length*7+16;
+      const lx=h[6]==='start'?h[4]:h[6]==='end'?h[4]-w:h[4]-w/2;
+      line(a,h[1],h[2],h[4],h[5]-4,'var(--metal)',1);
+      box(a,lx,h[5]-16,w,24,{rx:12,f:'var(--ink)',s:'var(--ink)'});
+      tx(a,lx+w/2,h[5],h[3],{s:13,c:'var(--bg)',w:600})}
+    sv('circle',{cx:h[1],cy:h[2],r:12,fill:'var(--bg)',stroke:'var(--ink)','stroke-width':2,class:'d'},a);
+    sv('circle',{cx:h[1],cy:h[2],r:5,fill:'var(--'+t.c+')'},a);
+    a.onclick=()=>show(h[0]);
+    a.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show(h[0])}};
+  });
+  tx(svg,380,472,'Top view, not to scale. Select a dot to open that system.',{s:13,c:'var(--mute)'});
+
+  const c1=card(side,'Start here');
+  el('p',null,c1).textContent='Both buttons set up the whole aircraft, so you can jump straight into a system or start from the beginning.';
+  const b=el('div',{class:'btns'},c1);
+  btn(b,'Cold and dark',presetCold);
+  btn(b,'Engine running at idle',presetRunning,'primary');
+  el('p',{class:'note'},c1).textContent='To learn the real start-up, choose Cold and dark, then open Engine & ignition. Its checklist lights up as each step is done.';
+
+  const c2=card(side,'How the pages work');
+  facts(c2,[
+    'Each page has a diagram that moves, controls you can operate, and a numbered chain showing what is happening, in order.',
+    'The Time setting at the top speeds up fuel burn and battery drain so you can see them change in minutes instead of hours.',
+    'Faults are on every page. Break something, then see how the instruments tell you about it.',
+    'Figures are typical for the Warrior II and rounded for teaching. Your aircraft\u2019s POH is the authority.'
+  ]);
+  const lg=el('div',{class:'legend'},c2);
+  [['fuel','Fuel (100LL, blue)'],['oil','Oil'],['elec','Electrical'],['air','Air and airflow'],['hyd','Brake fluid and hot gas']].forEach(x=>{const s=el('span',null,lg);s.innerHTML='<i style="background:var(--'+x[0]+')"></i>';s.append(x[1])});
+};
+/* ---------- ENGINE & IGNITION ---------- */
+function mixFactor(m){if(m<15)return 0;if(m<50)return lerp(0.35,0.92,(m-15)/35);if(m<75)return lerp(0.92,1,(m-50)/25);return lerp(1,0.965,(m-75)/25)}
+function doPrime(){if(S.running)return;S.prime=Math.min(8,S.prime+1);if(S.prime>=5)S.flooded=true}
+
+function simEngine(dt){
+  const ignOn=S.ign!=='OFF';
+  const powered=S.busLive&&S.volts>7.5;
+  S.cranking=!!(S.starter&&powered);
+  if(S.prime>0&&!S.cranking)S.prime=Math.max(0,S.prime-dt*0.02);
+  if(S.running&&S.humid&&!S.carb&&S.thr<80)S.ice=Math.min(1,S.ice+dt*(0.015+0.015*(1-S.thr/80)));
+  else if(S.carb)S.ice=Math.max(0,S.ice-dt*0.12);
+  else S.ice=Math.max(0,S.ice-dt*0.02);
+
+  if(!S.running){
+    const crankTarget=S.cranking?clamp(60+(S.volts-9)*45,50,190):0;
+    S.rpm+=(crankTarget-S.rpm)*clamp(dt*(crankTarget>S.rpm?3:1.1),0,1);
+    if(S.rpm<3&&crankTarget===0)S.rpm=0;
+    S.rough=0;S.magDrop=0;
+    if(S.cranking){
+      if(S.flooded&&S.mixture<12&&S.thr>80){S.floodClear+=dt;if(S.floodClear>3){S.flooded=false;S.prime=0;S.floodClear=0}}
+      const warm=S.oilT>105;let why='';
+      if(!ignOn)why='Ignition is OFF, so the magnetos are grounded and there is no spark.';
+      else if(S.sel==='OFF')why='The fuel selector is OFF. Select a tank.';
+      else if(!S.fuelOK)why='No fuel is reaching the carburetor. Check the selected tank, its quantity, and the fuel pump.';
+      else if(S.mixture<55)why='The mixture is too lean to start. Set it full RICH.';
+      else if(S.thr>=65)why='The throttle is too far open. Crack it about a quarter inch (under 25%).';
+      else if(S.flooded)why='The engine is flooded from too much prime. Mixture to idle cutoff, throttle full open, keep cranking until it clears.';
+      else if(!warm&&S.prime<2)why='A cold engine needs 2 to 3 strokes of prime before it will fire.';
+      else if(S.ice>=0.5)why='Carburetor ice is choking the engine.';
+      else if(S.waterLine>=0.5)why='Water in the fuel line: the engine will not fire.';
+      else if(S.volts<9.6)why='The battery is too weak to turn the engine fast enough.';
+      S.why=why;
+      if(!why){S.crankT+=dt;if(S.crankT>1.4){S.running=true;S.prime=0;S.crankT=0;S.rpm=Math.max(S.rpm,380);S.stopWhy=''}}
+      else S.crankT=Math.max(0,S.crankT-dt*0.5);
+    }else{S.crankT=0;S.why=''}
+  }else{
+    S.crankT=0;S.why='';
+    const mf=mixFactor(S.mixture);let stop='';
+    if(!ignOn)stop='The ignition was switched OFF.';
+    else if(S.mixture<15)stop='The mixture is at idle cutoff, so no fuel reaches the cylinders and the engine stops.';
+    else{
+      if(!S.fuelOK)S.starve+=dt;else S.starve=Math.max(0,S.starve-dt);
+      if(S.starve>2.5)stop='Fuel starvation: the selected tank is empty or blocked, the selector is off, or fuel pressure was lost.';
+      if(S.waterLine>0.6)stop='Water reached the carburetor and the engine quit.';
+      if(S.ice>0.95&&S.thr<85)stop='Carburetor ice choked the engine.';
+    }
+    const drop=S.ign==='R'?(S.foulR?260:70):S.ign==='L'?55:(S.foulR?25:0);
+    S.magDrop=drop;
+    const target=(650+S.thr*17.5)*mf*(S.carb?0.94:1)*(1-0.5*S.ice)-drop;
+    S.rpm+=(target-S.rpm)*clamp(dt*2.5,0,1);
+    S.rough=Math.max(S.ice>0.12?S.ice:0,S.waterLine>0.12?S.waterLine:0,(S.foulR&&S.ign!=='L')?0.4:0,S.starve>0?0.5:0);
+    if(!stop&&S.rpm<380)stop='RPM fell below running speed and the engine stalled.';
+    if(stop){S.running=false;S.stopWhy=stop;S.rough=0}
+  }
+  S.gph=S.running?(1.4+8.2*Math.pow(clamp((S.rpm-600)/1800,0,1.2),1.1))*lerp(0.7,1.1,S.mixture/100):0;
+}
+
+/* magneto check (automatic) */
+const MAG={busy:false,res:null};
+async function magCheck(){
+  if(MAG.busy||!S.running){return}
+  MAG.busy=true;MAG.res=null;
+  try{
+    S.thr=Math.round((2000-650)/17.5);S.ign='BOTH';
+    await sleep(2800);const base=S.rpm;
+    S.ign='R';await sleep(2800);const r=S.rpm;
+    S.ign='BOTH';await sleep(2000);
+    S.ign='L';await sleep(2800);const l=S.rpm;
+    S.ign='BOTH';await sleep(1500);
+    if(S.running){const dr=base-r,dl=base-l;MAG.res={base,dr,dl,diff:Math.abs(dr-dl),ok:dr<=175&&dl<=175&&Math.abs(dr-dl)<=50}}
+  }finally{MAG.busy=false}
+}
+async function shutDown(){
+  S.thr=0;await sleep(1500);S.mixture=0;await sleep(3000);
+  S.ign='OFF';S.alt=false;S.av=false;S.sw.fuelPump=false;S.bat=false;
+}
+
+/* visual state */
+const E={th:0};
+let eng={};
+
+build.engine=function(){
+  const {fig,side}=mkSection('engine','Engine and ignition',
+    'A four-cylinder, air-cooled Lycoming O-320 turning a fixed-pitch propeller. Run the start-up, then watch one cylinder through its four strokes while the flat-four shows the firing order and the two magnetos.');
+  const svg=mkSvg(fig,760,556,'Cutaway of one cylinder with a four-stroke animation, and a top view of the flat-four engine');
+  const g=sv('g',null,svg);
+  tx(g,190,26,'One cylinder, in slow motion',{s:15,w:600});
+  tx(g,560,26,'Flat-four, seen from above',{s:15,w:600});
+  // cylinder
+  const CX=190,CY=440,R=40,L=120;
+  sv('path',{d:'M170 245V222H98',stroke:'var(--fuel)','stroke-width':24,'stroke-opacity':.18,fill:'none'},g);
+  sv('path',{d:'M210 245V222H284',stroke:'var(--metal)','stroke-width':24,'stroke-opacity':.25,fill:'none'},g);
+  sv('rect',{x:140,y:170,width:100,height:75,rx:6,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2,opacity:.0},g);
+  eng.gas=sv('rect',{x:152,y:245,width:76,height:100,fill:'var(--fuel)',opacity:.3},g);
+  sv('path',{d:'M150 245V385M230 245V385',stroke:'var(--metal)','stroke-width':4,fill:'none'},g);
+  sv('path',{d:'M140 245H240V232H140Z',fill:'var(--metal2)',stroke:'var(--metal)','stroke-width':2},g);
+  sv('rect',{x:140,y:170,width:6,height:62,fill:'var(--metal2)'},g);
+  sv('rect',{x:234,y:170,width:6,height:62,fill:'var(--metal2)'},g);
+  // spark plug
+  sv('rect',{x:186,y:196,width:8,height:49,fill:'var(--metal)'},g);
+  sv('rect',{x:182,y:186,width:16,height:12,rx:2,fill:'var(--metal)'},g);
+  eng.spark=sv('circle',{cx:190,cy:248,r:0,fill:'#ffd84a'},g);
+  // valves
+  eng.vi=sv('g',null,g);line(eng.vi,170,190,170,245,'var(--ink)',3);sv('rect',{x:158,y:243,width:24,height:5,rx:2,fill:'var(--fuel)'},eng.vi);
+  eng.ve=sv('g',null,g);line(eng.ve,210,190,210,245,'var(--ink)',3);sv('rect',{x:198,y:243,width:24,height:5,rx:2,fill:'var(--metal)',stroke:'var(--ink)','stroke-width':.5},eng.ve);
+  eng.ain=sv('path',{d:'M100 222H150',stroke:'var(--fuel)','stroke-width':4,'marker-end':'',fill:'none'},g);
+  eng.aex=sv('path',{d:'M232 222H282',stroke:'var(--metal)','stroke-width':4,fill:'none'},g);
+  tx(g,98,206,'Intake',{a:'middle',s:13});tx(g,98,254,'fuel-air from carburetor',{s:11,c:'var(--mute)'});
+  tx(g,288,206,'Exhaust',{s:13});tx(g,288,254,'burnt gas out',{s:11,c:'var(--mute)'});
+  tx(g,190,176,'Spark plugs (2 per cylinder)',{s:11,c:'var(--mute)'});
+  // piston, rod, crank
+  eng.rod=line(g,CX,300,CX,CY,'var(--ink)',6);
+  eng.pis=sv('g',null,g);box(eng.pis,154,0,72,40,{rx:3,f:'var(--metal2)',s:'var(--ink)',sw:1.5});[8,14].forEach(y=>line(eng.pis,154,y,226,y,'var(--ink)',1));
+  eng.pin=sv('circle',{cx:CX,cy:300,r:6,fill:'var(--ink)'},g);
+  sv('circle',{cx:CX,cy:CY,r:R+8,fill:'none',stroke:'var(--metal)','stroke-width':2,'stroke-dasharray':'4 4'},g);
+  eng.web=line(g,CX,CY,CX,CY-R,'var(--metal)',10);
+  sv('circle',{cx:CX,cy:CY,r:9,fill:'var(--ink)'},g);
+  eng.cp=sv('circle',{cx:CX,cy:CY-R,r:8,fill:'var(--oil)',stroke:'var(--ink)'},g);
+  tx(g,300,330,'Piston',{a:'start',s:12,c:'var(--mute)'});tx(g,300,380,'Connecting rod',{a:'start',s:12,c:'var(--mute)'});tx(g,300,448,'Crankshaft',{a:'start',s:12,c:'var(--mute)'});
+  eng.stage=tx(g,190,56,'',{s:20,w:700,x:{'font-family':'var(--head)'}});
+  eng.sub=tx(g,190,76,'',{s:13,c:'var(--mute)'});
+  eng.crk=tx(g,190,548,'',{s:12,c:'var(--mute)'});
+  // stroke strip
+  eng.strip=['Intake','Compression','Power','Exhaust'].map((n,i)=>{const r=box(g,12+i*88,504,84,24,{rx:6});const t=tx(g,12+i*88+42,521,n,{s:12});return{r,t}});
+  // flat-4
+  const FX=560;
+  line(g,FX,110,FX,340,'var(--metal)',14);
+  sv('rect',{x:FX-26,y:150,width:52,height:140,rx:10,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2},g);
+  const cyl=[[1,1,185],[3,1,265],[2,-1,185],[4,-1,265]];
+  eng.cyl={};
+  cyl.forEach(c=>{
+    const n=c[0],side=c[1],y=c[2];
+    const x0=side>0?FX+26:FX-26-86;
+    const body=box(g,x0,y-22,86,44,{rx:5});
+    for(let k=1;k<5;k++){const lx=x0+k*(86/5);line(g,lx,y-22,lx,y+22,'var(--metal)',1,{opacity:.5})}
+    const px=side>0?x0+86-8:x0+8;
+    const pl=sv('circle',{cx:px,cy:y-27,r:6,fill:'var(--fuel)',stroke:'var(--ink)','stroke-width':1},g);
+    const pr=sv('circle',{cx:px,cy:y+27,r:6,fill:'var(--ok)',stroke:'var(--ink)','stroke-width':1},g);
+    const bl=sv('circle',{cx:px,cy:y-27,r:0,fill:'#ffd84a'},g);
+    const br=sv('circle',{cx:px,cy:y+27,r:0,fill:'#ffd84a'},g);
+    tx(g,side>0?x0+34:x0+52,y+5,'Cyl '+n,{s:14,w:700});
+    eng.cyl[n]={body,bl,br};
+  });
+  eng.prop=sv('g',{transform:'translate('+FX+' 96)'},g);
+  sv('ellipse',{cx:0,cy:0,rx:62,ry:62,fill:'var(--metal)',opacity:.08},eng.prop);
+  line(eng.prop,-60,0,60,0,'var(--ink)',7);sv('circle',{r:9,fill:'var(--ink)'},eng.prop);
+  tx(g,FX+82,100,'Propeller',{a:'start',s:12,c:'var(--mute)'});
+  tx(g,FX,364,'Dual magnetos',{s:12,c:'var(--mute)'});
+  eng.mL=box(g,FX-92,372,86,28,{rx:6,s:'var(--fuel)',sw:2});tx(g,FX-49,391,'Left mag',{s:13});
+  eng.mR=box(g,FX+6,372,86,28,{rx:6,s:'var(--ok)',sw:2});tx(g,FX+49,391,'Right mag',{s:13});
+  tx(g,FX,332+0,'',{s:1});tx(g,FX,418,'Cylinders 1, 3 right and 2, 4 left. Firing order 1-3-2-4.',{s:11,c:'var(--mute)'});
+  eng.tach=gauge(g,455,488,62,{min:0,max:3000,ticks:[0,500,1000,1500,2000,2500,3000].map(v=>[v,v/100]),bands:[[2000,2700,'var(--ok)'],[2700,3000,'var(--bad)']],title:'RPM x100'});
+  eng.t1=tx(g,545,458,'',{a:'start',s:14});eng.t2=tx(g,545,480,'',{a:'start',s:14});eng.t3=tx(g,545,502,'',{a:'start',s:14});eng.t4=tx(g,545,524,'',{a:'start',s:14});
+
+  /* panel */
+  const c0=card(side,'What is happening');
+  eng.say=saybox(c0);
+  const c1=card(side,'Controls');
+  const two=el('div',{class:'two'},c1);
+  sw('engine',two,'Master switch',()=>S.bat,v=>S.bat=v,'elec');
+  sw('engine',two,'Electric fuel pump',()=>S.sw.fuelPump,v=>S.sw.fuelPump=v,'fuel');
+  seg('engine',c1,'Fuel selector',[['OFF','Off'],['L','Left tank'],['R','Right tank']],()=>S.sel,v=>S.sel=v);
+  seg('engine',c1,'Ignition switch',[['OFF','Off'],['R','Right'],['L','Left'],['BOTH','Both']],()=>S.ign,v=>S.ign=v);
+  rng('engine',c1,'Mixture',0,100,1,()=>S.mixture,v=>S.mixture=v,v=>v<10?'Idle cutoff':v>=95?'Full rich':f0(v)+'%');
+  rng('engine',c1,'Throttle',0,100,1,()=>S.thr,v=>S.thr=v,v=>v<3?'Closed':f0(v)+'%');
+  sw('engine',c1,'Carburetor heat',()=>S.carb,v=>S.carb=v,'air');
+  const bb=el('div',{class:'btns'},c1);
+  btn(bb,'Prime one stroke',doPrime);
+  hold(bb,'Hold to START',()=>S.starter=true,()=>S.starter=false,'primary');
+  const pr=el('p',{class:'note'},c1);reg('engine',()=>{pr.textContent='Prime strokes so far: '+S.prime+(S.flooded?'  (flooded)':'')});
+  const bb2=el('div',{class:'btns'},c1);
+  btn(bb2,'Shut down properly',shutDown);
+  el('p',{class:'note'},c1).textContent='The correct way to stop the engine is mixture to idle cutoff. Switching the ignition off first would leave unburnt fuel in the cylinders.';
+
+  const c2=card(side,'Start-up checklist');
+  eng.chain=chain(c2);
+  const c3=card(side,'Magneto check');
+  el('p',{class:'note'},c3).textContent='Start the engine, then run the check. It sets about 2,000 RPM and tries each magneto alone. Limits: no more than 175 RPM drop on either, and no more than 50 RPM between them.';
+  const mb=el('div',{class:'btns'},c3);btn(mb,'Run magneto check',magCheck);
+  eng.mag=el('div',null,c3);
+  const c4=card(side,'Faults');
+  sw('engine',c4,'Humid air (carburetor ice likely)',()=>S.humid,v=>S.humid=v,'air');
+  sw('engine',c4,'Fouled plugs on the right magneto',()=>S.foulR,v=>S.foulR=v,'bad');
+  const c5=card(side,'Handy facts');
+  facts(c5,['Lycoming O-320, 160 hp at 2,700 RPM, direct drive, carburetted.','Red line 2,700 RPM. Idle is around 600 to 700 RPM. On the ground full throttle gives roughly 2,300 to 2,400 RPM.','Magnetos make their own spark, so the engine keeps running with the master switch off.','Fixed-pitch propeller: the tachometer is the power gauge.']);
+};
+
+draw.engine=function(dt){
+  const rate=S.rpm*0.09+(S.rpm>30?20:0);
+  E.th=(E.th+rate*dt)%720;
+  const ph=E.th,phi=rad(ph%360);
+  const CX=190,CY=440,R=40,L=120;
+  const pinY=CY-(R*Math.cos(phi)+Math.sqrt(L*L-R*R*Math.sin(phi)*Math.sin(phi)));
+  const crown=pinY-20;
+  eng.pis.setAttribute('transform','translate(0 '+crown.toFixed(1)+')');
+  eng.pin.setAttribute('cy',pinY.toFixed(1));
+  const cpx=CX+R*Math.sin(phi),cpy=CY-R*Math.cos(phi);
+  eng.cp.setAttribute('cx',cpx.toFixed(1));eng.cp.setAttribute('cy',cpy.toFixed(1));
+  eng.web.setAttribute('x2',cpx.toFixed(1));eng.web.setAttribute('y2',cpy.toFixed(1));
+  eng.rod.setAttribute('y1',pinY.toFixed(1));eng.rod.setAttribute('x2',cpx.toFixed(1));eng.rod.setAttribute('y2',cpy.toFixed(1));
+  eng.gas.setAttribute('height',Math.max(2,crown-245).toFixed(1));
+  const iOpen=ph<190,eOpen=ph>=530&&ph<720;
+  eng.vi.setAttribute('transform','translate(0 '+(iOpen?12:0)+')');
+  eng.ve.setAttribute('transform','translate(0 '+(eOpen?12:0)+')');
+  eng.ain.setAttribute('opacity',iOpen?1:.15);eng.aex.setAttribute('opacity',eOpen?1:.15);
+  let fill='var(--fuel)',op=.3,stage='Intake',sub='Piston down, intake valve open: mixture drawn in.',si=0;
+  if(ph>=180&&ph<360){stage='Compression';si=1;sub='Both valves closed: rising piston squeezes it.';op=lerp(.3,.75,(ph-180)/180)}
+  else if(ph>=360&&ph<540){stage='Power';si=2;sub='Spark lights it: expanding gas drives piston down.';fill='#ff7a1a';op=lerp(.95,.35,(ph-360)/180)}
+  else if(ph>=540){stage='Exhaust';si=3;sub='Exhaust valve open: piston pushes burnt gas out.';fill='var(--metal)';op=.5}
+  eng.gas.setAttribute('fill',fill);eng.gas.setAttribute('opacity',op.toFixed(2));
+  const spark=ph>=335&&ph<365&&S.rpm>20&&S.ign!=='OFF'&&(S.running||S.cranking);
+  eng.spark.setAttribute('r',spark?11:0);
+  eng.stage.textContent=stage;eng.sub.textContent=S.rpm>20?sub:'Engine stopped: start it to see the cycle.';
+  eng.crk.textContent='Crank angle '+f0(ph)+' of 720 degrees (two turns per cycle)';
+  eng.strip.forEach((s,i)=>{const on=S.rpm>20&&i===si;s.r.setAttribute('fill',on?'var(--ink)':'var(--raise)');s.t.setAttribute('fill',on?'var(--bg)':'var(--ink)')});
+  // flat-four
+  const idx=Math.floor((((ph-360)%720+720)%720)/180);const firing=[1,3,2,4][idx];
+  const lOn=S.ign==='L'||S.ign==='BOTH',rOn=S.ign==='R'||S.ign==='BOTH';
+  const live=S.rpm>20&&(S.running||S.cranking);
+  [1,2,3,4].forEach(n=>{const c=eng.cyl[n];const on=live&&n===firing;
+    c.body.setAttribute('fill',on?'#ff9a3c':'var(--raise)');
+    const burst=on&&((ph-360+720)%720)%180<35;
+    c.bl.setAttribute('r',burst&&lOn?10:0);c.br.setAttribute('r',burst&&rOn?10:0)});
+  eng.prop.setAttribute('transform','translate(560 96) rotate('+(ph%360).toFixed(1)+')');
+  eng.mL.setAttribute('fill',live&&lOn?'rgba(79,163,255,.35)':'var(--raise)');
+  eng.mR.setAttribute('fill',live&&rOn?'rgba(70,208,138,.35)':'var(--raise)');
+  eng.tach.set(S.rpm);
+  eng.t1.textContent='Ignition: '+({OFF:'off',R:'right only',L:'left only',BOTH:'both'})[S.ign];
+  eng.t2.textContent=S.running?'Mag drop: '+f0(S.magDrop)+' RPM':'Engine not running';
+  eng.t3.textContent='Fuel flow: '+f1(S.gph)+' gal/hr';
+  eng.t4.textContent=S.rough>0.1?'Running rough':(S.running?'Running smoothly':'');
+  eng.t4.setAttribute('fill',S.rough>0.1?'var(--bad)':'var(--ink)');
+  // narration
+  let s;
+  if(S.cranking&&!S.running)s=S.why||'The starter is turning the engine. Spark, fuel and mixture are all in order, so it should catch in a moment.';
+  else if(S.running){
+    s='Running at '+f0(S.rpm)+' RPM. The cylinders fire in the order 1-3-2-4, so a power stroke happens every half turn of the crankshaft.';
+    if(S.ice>0.12)s+=' It is running rough because of carburetor ice. Apply carburetor heat.';
+    else if(S.carb)s+=' Carburetor heat is on. Heated air is thinner, so the mixture richens and RPM drops a little. It bypasses the air filter, so use it only when needed.';
+    if(S.ign==='R'||S.ign==='L')s+=' On one magneto only, each cylinder has a single spark plug, so the burn is slower and RPM drops about '+f0(S.magDrop)+'.';
+    else if(S.foulR)s+=' Fouled plugs on the right magneto cost some RPM even with both magnetos on.';
+    if(S.mixture<60)s+=' The mixture is very lean, so RPM is falling and the engine may quit.';
+    if(!S.bat)s+=' The master switch is off, but the engine keeps running because the magnetos need no battery.';
+  }
+  else if(S.stopWhy)s='The engine stopped. '+S.stopWhy;
+  else s='The engine is stopped. Work down the start-up checklist, then hold START.';
+  eng.say.set(s);
+  eng.chain.set([
+    ['Fuel selector on a tank, fullest first',S.sel!=='OFF'],['Electric fuel pump ON for the start',S.sw.fuelPump||S.running],['Mixture full RICH',S.mixture>=90],['Carburetor heat OFF (cold)',!S.carb],
+    ['Throttle cracked, under 25%',(S.thr<25&&S.thr>0)||S.running],['Master switch ON',S.bat],
+    ['Prime 2 to 3 strokes (cold engine only)',S.prime>=2||S.oilT>105||S.running],
+    ['Hold START until it fires',S.running],['Oil pressure rising within 30 seconds',S.running&&S.oilP>25],
+    ['Electric pump OFF, fuel pressure still in the green',S.running&&!S.sw.fuelPump&&S.fuelP>=0.5],['Alternator ON and ammeter checked',S.alt&&S.running]]);
+  if(MAG.busy)eng.mag.innerHTML='<p class="note">Running the check, please wait. Watch the tachometer.</p>';
+  else if(MAG.res){const m=MAG.res;const k='r'+f0(m.base)+f0(m.dr)+f0(m.dl);if(eng.mag._k!==k){eng.mag._k=k;
+    eng.mag.innerHTML='<table class="t"><tr><td>Both magnetos</td><td>'+f0(m.base)+' RPM</td></tr><tr><td>Right only drop</td><td>'+f0(m.dr)+' RPM</td></tr><tr><td>Left only drop</td><td>'+f0(m.dl)+' RPM</td></tr><tr><td>Difference</td><td>'+f0(m.diff)+' RPM</td></tr><tr><td>Result</td><td class="'+(m.ok?'pass':'fail')+'">'+(m.ok?'Within limits':'Out of limits: investigate before flight')+'</td></tr></table>'}}
+  else if(eng.mag._k!==''){eng.mag._k='';eng.mag.innerHTML=''}
+};
+resets.push(()=>{MAG.res=null;MAG.busy=false});
+/* ---------- FUEL (PA-28-161: selector + two pumps) ---------- */
+function simFuelAvail(dt){
+  ['L','R'].forEach(k=>{
+    const vent=S['vent'+k];let v=S['vac'+k];
+    if(vent&&S.running&&S.sel===k)v=Math.min(1,v+dt*0.15);else v=Math.max(0,v-dt*(vent?0.02:0.5));
+    S['vac'+k]=v;
+    S['feed'+k]=S['fuel'+k]>0.02&&!(vent&&v>=1);
+  });
+  const k=S.sel;
+  S.fuelFeed=!!(k!=='OFF'&&S['feed'+k]);
+  S.elecPump=!!(S.busLive&&S.sw.fuelPump&&S.cb.fuelPump);
+  const engP=S.engPumpFail?0:clamp(S.rpm/500,0,1)*4.5;
+  const elP=S.elecPump?4:0;
+  let p=Math.max(engP,elP)+0.25*Math.min(engP,elP);
+  if(!S.fuelFeed)p=0;
+  S.fuelP+=(p-S.fuelP)*clamp(dt*5,0,1);
+  if(p===0&&S.fuelP<0.05)S.fuelP=0;
+  S.fuelOK=!!(S.fuelFeed&&S.fuelP>=0.5);
+}
+function simFuelBurn(dt){
+  if(S.running&&S.fuelOK){
+    const k=S.sel;
+    S['fuel'+k]=Math.max(0,S['fuel'+k]-S.gph*dt*S.ts/3600);
+    if(k==='L'&&S.waterL>0)S.waterLine=Math.min(1,S.waterLine+dt*0.07);
+  }
+}
+const FU={sample:null,lastPrime:0,flash:0};
+function drainSample(k){
+  let water=false,none=false;
+  if(k==='L'){water=S.waterL>0;S.waterL=0}
+  else if(k==='R'){water=false}
+  else{if(S.fuelL<0.05&&S.fuelR<0.05)none=true;else{water=S.waterLine>0;S.waterLine=0}}
+  FU.sample={k,water,none};
+}
+function tankFill(t){return clamp(t/24,0,1)}
+let fuel_ui=null;
+function selFuel(v){S.sel=v}
+
+build.fuel=function(){
+  const {fig,side}=mkSection('fuel','Fuel system',
+    'Two wing tanks sit below the engine, so fuel cannot run downhill to the carburetor. A selector picks one tank, an electric pump and an engine-driven pump push the fuel up, and the gauge shows whether pressure is there.');
+  const svg=mkSvg(fig,760,580,'Fuel system schematic: two low wing tanks, selector, electric pump, strainer, engine pump, carburetor, primer, and a carburetor cutaway');
+  const g=sv('g',null,svg);const FUEL='var(--fuel)';const fu={};
+  [['L',20,'Left wing tank'],['R',290,'Right wing tank']].forEach(t=>{
+    const x=t[1];
+    box(g,x,430,190,92,{rx:12});
+    fu['fill'+t[0]]=sv('rect',{x:x+4,y:518,width:182,height:0,fill:FUEL,opacity:.55,rx:8},g);
+    tx(g,x+95,452,t[2],{s:14,w:600});
+    fu['q'+t[0]]=tx(g,x+95,496,'',{s:18,w:700,x:{'font-family':'var(--head)'}});
+    fu['vac'+t[0]]=tx(g,x+95,566,'',{s:12,c:'var(--bad)'});
+    const vx=t[0]==='L'?x+22:x+168;
+    sv('path',{d:'M'+vx+' 430V410H'+(vx+(t[0]==='L'?-10:10)),stroke:'var(--metal)','stroke-width':3,fill:'none','stroke-linecap':'round'},g);
+    tx(g,vx+(t[0]==='L'?-4:4),402,'vent',{s:11,c:'var(--mute)'});
+    fu['x'+t[0]]=tx(g,vx,426,'\u2715',{s:16,c:'var(--bad)',w:700});
+    box(g,x+(t[0]==='L'?130:44),522,16,8,{rx:2,f:'var(--metal2)'});
+    tx(g,x+(t[0]==='L'?138:52),544,'sump drain',{s:10,c:'var(--mute)'});
+  });
+  fu.pL=pipe('fuel',g,'M115 430V380H228',FUEL,7);
+  fu.pR=pipe('fuel',g,'M385 430V380H272',FUEL,7);
+  fu.p1=pipe('fuel',g,'M250 358V344',FUEL,7);
+  fu.p2=pipe('fuel',g,'M250 300V270',FUEL,7);
+  fu.p3=pipe('fuel',g,'M250 226V196',FUEL,7);
+  fu.p4=pipe('fuel',g,'M250 152V134',FUEL,7);
+  fu.p5=pipe('fuel',g,'M250 78V48',FUEL,7);
+  fu.pp=pipe('fuel',g,'M222 248H100',FUEL,4);
+  fu.pp2=pipe('fuel',g,'M70 225H50V32H170',FUEL,4);
+  // selector valve
+  fu.valve=sv('g',{transform:'translate(250 380)',class:'hot',tabindex:0,role:'button','aria-label':'Turn fuel selector'},g);
+  sv('circle',{r:22,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2},fu.valve);
+  fu.lever=sv('g',null,fu.valve);line(fu.lever,0,0,0,-18,'var(--ink)',6);sv('circle',{r:6,fill:'var(--ink)'},fu.lever);
+  const nextSel=()=>{S.sel=S.sel==='OFF'?'L':S.sel==='L'?'R':'OFF'};
+  fu.valve.onclick=nextSel;
+  fu.valve.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();nextSel()}};
+  tx(g,250,420,'Selector',{s:11,c:'var(--mute)'});
+  tx(g,222,372,'L',{s:11,w:700,c:'var(--mute)'});tx(g,278,372,'R',{s:11,w:700,c:'var(--mute)'});
+  // electric pump
+  fu.ep=box(g,222,300,56,44,{rx:8});tx(g,250,319,'Electric',{s:11});tx(g,250,333,'pump',{s:11});
+  tx(g,290,318,'Electric boost pump',{a:'start',s:12,w:600});tx(g,290,332,'start, takeoff, landing, backup',{a:'start',s:10,c:'var(--mute)'});
+  // strainer
+  box(g,222,226,56,44,{rx:6});tx(g,250,252,'Strainer',{s:12});
+  box(g,226,270,12,10,{rx:2,f:'var(--metal2)'});tx(g,218,284,'drain',{a:'end',s:10,c:'var(--mute)'});
+  tx(g,290,248,'Strainer collects water and dirt',{a:'start',s:11,c:'var(--mute)'});
+  // engine pump
+  fu.mp=box(g,222,152,56,44,{rx:8});tx(g,250,171,'Engine',{s:11});tx(g,250,185,'pump',{s:11});
+  tx(g,290,170,'Engine-driven pump',{a:'start',s:12,w:600});tx(g,290,184,'works only while the engine turns',{a:'start',s:10,c:'var(--mute)'});
+  // carb + manifold
+  box(g,205,78,90,56,{rx:8});tx(g,250,111,'Carburetor',{s:13,w:600});
+  box(g,170,16,160,32,{rx:8});tx(g,250,37,'Intake manifold and cylinders',{s:12});
+  // primer
+  fu.primer=box(g,70,200,60,50,{rx:8});tx(g,100,230,'Primer',{s:12});
+  fu.plunger=box(g,92,184,16,16,{rx:3,f:'var(--ink)',s:'var(--ink)'});
+  tx(g,100,266,'sprays fuel into',{s:10,c:'var(--mute)'});tx(g,100,278,'the intake ports',{s:10,c:'var(--mute)'});
+  // carb cutaway
+  tx(g,630,22,'Carburetor, cut away',{s:14,w:600});
+  const cg=sv('g',{transform:'translate(520 34)'},g);
+  sv('path',{d:'M85 14V100L98 125V160L85 185V250M135 14V100L122 125V160L135 185V250',stroke:'var(--metal)','stroke-width':3,fill:'none'},cg);
+  fu.ice1=sv('circle',{cx:98,cy:142,r:0,fill:'#fff',stroke:'var(--metal)'},cg);fu.ice2=sv('circle',{cx:122,cy:142,r:0,fill:'#fff',stroke:'var(--metal)'},cg);fu.ice3=sv('circle',{cx:110,cy:215,r:0,fill:'#fff',stroke:'var(--metal)'},cg);
+  fu.airC=pipe('fuel',cg,'M110 8V250','var(--air)',5);
+  fu.airH=pipe('fuel',cg,'M20 30H110','var(--hyd)',5);
+  tx(cg,110,2,'Air in',{s:11,c:'var(--mute)'});tx(cg,16,24,'Hot air',{s:11,c:'var(--hyd)',a:'start'});tx(cg,16,48,'(from exhaust heat muff)',{s:10,c:'var(--mute)',a:'start'});
+  tx(cg,76,136,'Venturi',{a:'end',s:11,c:'var(--mute)'});tx(cg,110,276,'Throttle plate',{s:11,c:'var(--mute)'});
+  fu.plate=sv('g',{transform:'translate(110 215)'},cg);line(fu.plate,-24,0,24,0,'var(--ink)',5);
+  sv('circle',{cx:110,cy:215,r:4,fill:'var(--ink)'},cg);
+  box(cg,150,135,66,84,{rx:6});
+  fu.bowl=sv('rect',{x:153,y:200,width:60,height:16,fill:FUEL,opacity:.55},cg);
+  fu.float=box(cg,166,196,30,8,{rx:3,f:'var(--metal2)'});
+  line(cg,182,135,182,170,'var(--ink)',3);tx(cg,182,128,'fuel in',{s:11,c:'var(--fuel)'});
+  tx(cg,183,234,'float bowl',{s:11,c:'var(--mute)'});
+  fu.jetp=pipe('fuel',cg,'M150 196H130V146H122',FUEL,4);
+  fu.needle=sv('rect',{x:134,y:186,width:8,height:10,fill:'var(--oil)'},cg);
+  fu.carbT=tx(g,630,330,'',{s:12,w:600});
+  // gauges
+  fu.gP=gauge(g,560,432,38,{min:0,max:10,ticks:[[0,'0'],[5,'5'],[10,'10']],bands:[[0,0.5,'var(--bad)'],[0.5,8,'var(--ok)'],[8,10,'var(--bad)']],title:'PSI',a0:-110,a1:110,fmt:v=>v.toFixed(1)});
+  fu.gL=gauge(g,640,432,38,{min:0,max:24,ticks:[[0,'E'],[12,'\u00bd'],[24,'F']],bands:[[0,2,'var(--bad)']],title:'LEFT',a0:-100,a1:100});
+  fu.gR=gauge(g,720,432,38,{min:0,max:24,ticks:[[0,'E'],[12,'\u00bd'],[24,'F']],bands:[[0,2,'var(--bad)']],title:'RIGHT',a0:-100,a1:100});
+  tx(g,560,484,'Fuel pressure',{s:11,c:'var(--mute)'});tx(g,680,484,'Fuel quantity',{s:11,c:'var(--mute)'});
+  fu.t1=tx(g,640,520,'',{s:13});fu.t2=tx(g,640,540,'',{s:13});fu.t3=tx(g,640,560,'',{s:13,c:'var(--mute)'});
+  fuel_ui=fu;
+
+  const c0=card(side,'What is happening');fu.say=saybox(c0);
+  const c1=card(side,'Controls');
+  seg('fuel',c1,'Fuel selector',[['OFF','Off'],['L','Left tank'],['R','Right tank']],()=>S.sel,selFuel);
+  sw('fuel',c1,'Electric fuel pump',()=>S.sw.fuelPump,v=>S.sw.fuelPump=v,'fuel');
+  rng('fuel',c1,'Left tank',0,24,0.5,()=>S.fuelL,v=>S.fuelL=v,v=>f1(v)+' gal');
+  rng('fuel',c1,'Right tank',0,24,0.5,()=>S.fuelR,v=>S.fuelR=v,v=>f1(v)+' gal');
+  const b1=el('div',{class:'btns'},c1);btn(b1,'Fill both tanks',()=>{S.fuelL=24;S.fuelR=24});
+  el('p',{class:'note'},c1).textContent='The engine draws from one tank only. Raise the Time setting at the top to burn fuel faster, then switch tanks to keep them balanced.';
+  const c2=card(side,'Drain samples');
+  el('p',{class:'note'},c2).textContent='Do this before the first flight of the day. Water is heavier than fuel, so it sinks to the low points.';
+  const b2=el('div',{class:'btns'},c2);
+  btn(b2,'Left tank sump',()=>drainSample('L'));btn(b2,'Right tank sump',()=>drainSample('R'));btn(b2,'Strainer',()=>drainSample('S'));
+  fu.cup=el('div',{class:'cup'},c2);
+  const c3=card(side,'Faults');
+  sw('fuel',c3,'Engine-driven pump failure',()=>S.engPumpFail,v=>S.engPumpFail=v,'bad');
+  sw('fuel',c3,'Left tank vent blocked',()=>S.ventL,v=>S.ventL=v,'bad');
+  sw('fuel',c3,'Right tank vent blocked',()=>S.ventR,v=>S.ventR=v,'bad');
+  sw('fuel',c3,'Water in the left tank',()=>S.waterL>0,v=>S.waterL=v?1:0,'bad');
+  const c4=card(side,'Fuel path');fu.chain=chain(c4);
+  const c5=card(side,'Handy facts');
+  facts(c5,['Two wing tanks of 25 gal, about 24 usable each, 48 usable in total. Grade 100LL, dyed blue.','The selector has OFF, LEFT and RIGHT. It feeds one tank at a time, so you manage the balance yourself.','The tanks are lower than the engine, so pumps are essential. The engine pump does the work in normal running and the electric pump backs it up.','Fuel pressure is normally in the green, about 0.5 to 8 psi. If it drops, switch the electric pump on.','Use the electric pump for start, takeoff, landing and tank changes, as your POH says.','The fuel gauges are electric and read only with the master switch on.']);
+};
+
+draw.fuel=function(dt){
+  const fu=fuel_ui;
+  ['L','R'].forEach(k=>{
+    const lvl=tankFill(S['fuel'+k]);fu['fill'+k].setAttribute('height',(84*lvl).toFixed(1));fu['fill'+k].setAttribute('y',(518-84*lvl).toFixed(1));
+    fu['q'+k].textContent=f1(S['fuel'+k])+' gal';
+    fu['x'+k].setAttribute('opacity',S['vent'+k]?1:0);
+    const v=S['vac'+k];fu['vac'+k].textContent=S['vent'+k]?'Tank vacuum '+f0(v*100)+'%':'';
+  });
+  const ang=S.sel==='L'?-90:S.sel==='R'?90:180;
+  fu.lever.setAttribute('transform','rotate('+ang+')');
+  const moving=S.fuelOK&&(S.running||S.cranking||S.elecPump);
+  const sp=moving?30+S.gph*5:0;
+  fu.pL.set(moving&&S.sel==='L'?sp:0);fu.pR.set(moving&&S.sel==='R'?sp:0);
+  fu.p1.set(sp);fu.p2.set(sp);fu.p3.set(sp);fu.p4.set(S.running||S.cranking?sp:0);fu.p5.set(S.running?sp:0);
+  fu.ep.setAttribute('fill',S.elecPump?'rgba(79,163,255,.35)':'var(--raise)');
+  fu.mp.setAttribute('fill',S.rpm>50&&!S.engPumpFail?'rgba(79,163,255,.35)':(S.engPumpFail?'rgba(255,106,91,.3)':'var(--raise)'));
+  if(S.prime>FU.lastPrime)FU.flash=0.5;FU.lastPrime=S.prime;
+  FU.flash=Math.max(0,FU.flash-dt);
+  fu.plunger.setAttribute('y',FU.flash>0?198:184);
+  fu.pp.set(FU.flash>0?60:0);fu.pp2.set(FU.flash>0?60:0);
+  const air=S.running?20+S.rpm/30:(S.cranking?25:0);
+  fu.airC.set(S.carb?0:air,.8);fu.airH.set(S.carb?air:0,.9);
+  fu.plate.setAttribute('transform','translate(110 215) rotate('+(-(S.thr/100)*82)+')');
+  fu.jetp.set(S.running&&S.fuelOK?35:0);
+  fu.needle.setAttribute('height',(2+10*S.mixture/100).toFixed(1));fu.needle.setAttribute('y',(196-(2+10*S.mixture/100)).toFixed(1));
+  const ice=S.ice;fu.ice1.setAttribute('r',(ice*13).toFixed(1));fu.ice2.setAttribute('r',(ice*13).toFixed(1));fu.ice3.setAttribute('r',(ice*10).toFixed(1));
+  fu.carbT.textContent=S.ice>0.05?'Ice: '+f0(ice*100)+'% blocked':(S.carb?'Carb heat ON: hot, unfiltered air':'Carb heat OFF: filtered outside air');
+  fu.carbT.setAttribute('fill',S.ice>0.3?'var(--bad)':'var(--ink)');
+  fu.gP.set(S.fuelP,f1(S.fuelP));
+  if(S.instOn){fu.gL.set(S.fuelL,'');fu.gR.set(S.fuelR,'')}else{fu.gL.set(0,'no power');fu.gR.set(0,'no power')}
+  const tot=S.fuelL+S.fuelR;
+  fu.t1.textContent='Usable fuel: '+f1(tot)+' gal';
+  fu.t2.textContent=S.running?'Burning '+f1(S.gph)+' gal/hr':'Engine not running';
+  fu.t3.textContent=S.running&&S.gph>0?'Endurance about '+Math.floor(tot/S.gph)+' h '+f0(((tot/S.gph)%1)*60)+' min':'';
+  const sm=FU.sample;
+  if(sm){const key=JSON.stringify(sm);if(fu.cup._k!==key){fu.cup._k=key;
+    const nm={L:'Left sump',R:'Right sump',S:'Strainer'}[sm.k];
+    if(sm.none)fu.cup.innerHTML='<p class="note">'+nm+': nothing comes out. The tanks are empty.</p>';
+    else fu.cup.innerHTML='<div class="glass">'+(sm.water?'<i style="height:35%;bottom:0;background:#d7dee4"></i><i style="height:65%;bottom:35%;background:var(--fuel);opacity:.8"></i>':'<i style="height:100%;bottom:0;background:var(--fuel);opacity:.8"></i>')+'</div><div><b>'+nm+':</b> '+(sm.water?'<span class="fail">water found.</span> It sits clear and separate at the bottom. Keep draining until only blue fuel comes out.':'<span class="pass">clean blue fuel.</span> No water.')+'</div>';}}
+  else if(fu.cup._k!==''){fu.cup._k='';fu.cup.innerHTML=''}
+  const selName=S.sel==='L'?'left':'right';
+  let s;
+  if(S.sel==='OFF')s='The selector is OFF. No tank is connected, so nothing reaches the pumps or the carburetor. The engine will quit within seconds.';
+  else if(S.engPumpFail&&S.running&&!S.elecPump)s='The engine-driven pump has failed and the electric pump is off, so fuel pressure is gone and the engine is about to starve. Switch the electric pump ON.';
+  else if(S.engPumpFail&&S.elecPump)s='The engine-driven pump has failed, but the electric pump is supplying pressure. That is exactly what it is for. Land at the nearest suitable airfield.';
+  else if(!S.fuelFeed)s='The '+selName+' tank cannot deliver fuel right now. It is either empty or its vent is blocked. Switch to the other tank.';
+  else if((S.ventL&&S.sel==='L'||S.ventR&&S.sel==='R'))s='A blocked vent stops air replacing the fuel that leaves, so a vacuum builds in the '+selName+' tank and it stops feeding. Switch to the other tank.';
+  else if(S.waterL>0&&S.sel==='L'&&S.running)s='Water from the left tank is travelling toward the strainer. When it reaches the carburetor the engine will run rough and quit. Drain the sumps and the strainer.';
+  else if(S.waterLine>0.1)s='Water has reached the fuel line. Drain the strainer.';
+  else if(S.running)s='The '+selName+' tank is feeding. The engine pump pushes fuel up through the strainer to the float bowl at '+f1(S.fuelP)+' psi, and the engine is burning '+f1(S.gph)+' gal/hr from that tank alone.'+(S.elecPump?' The electric pump is helping.':'');
+  else if(S.elecPump)s='The electric pump is running. It pushes fuel from the '+selName+' tank up to the carburetor so the engine can be primed and started.';
+  else s='The engine is stopped, so the engine-driven pump is not turning and the line is not pressurised. Switch the electric pump on to see fuel pressure, or start the engine.';
+  fu.say.set(s);
+  fu.chain.set([['Fuel sits in the wing tanks, below the engine level',tot>0.05],['The selector connects one tank to the system',S.sel!=='OFF'],['A pump pushes fuel uphill: electric before start, engine-driven when running',S.fuelP>=0.5],['The strainer traps water and dirt',S.fuelOK],['The engine pump holds pressure to the carburetor',S.fuelOK&&S.rpm>50],['The float bowl holds a steady level',S.fuelOK&&(S.running||S.cranking)],['Intake suction draws fuel through the jet, and it reaches the cylinders',S.running&&S.fuelOK]]);
+};
+resets.push(()=>{FU.sample=null});
+/* ---------- OIL ---------- */
+function quickStart(){S.bat=true;S.alt=true;if(S.sel==='OFF')S.sel='L';S.mixture=100;S.ign='BOTH';S.carb=false;S.running=true;S.rpm=Math.max(S.rpm,700);S.stopWhy=''}
+function simOil(dt){
+  if(S.oilLeak&&S.oilQty>0)S.oilQty=Math.max(0,S.oilQty-dt*0.03);
+  const rf=clamp(S.rpm/2300,0,1.15);
+  let p=0;
+  if(S.rpm>40){
+    p=18+58*Math.pow(rf,0.7);
+    const visc=clamp((100-S.oilT)/80,-0.25,1);
+    p*=1+0.35*visc;
+    p*=Math.pow(clamp(S.rpm/450,0,1),1.5);
+    p*=clamp((S.oilQty-1.5)/2,0,1);
+    if(S.pumpFail)p*=0.3;
+    if(S.filterClog)p*=0.95;
+  }
+  S.oilPraw=p;
+  if(p>85)p=85+(p-85)*0.2;
+  p=Math.min(p,100);
+  S.oilP+=(p-S.oilP)*clamp(dt*4,0,1);
+  if(S.oilP<0.3&&p===0)S.oilP=0;
+  let target=S.amb;
+  if(S.running){target=S.amb+50+80*Math.pow(clamp(S.rpm/2300,0,1.1),2);if(S.oilQty<5.5)target+=(5.5-S.oilQty)*14;if(S.pumpFail)target+=15}
+  const tau=S.running?40:220;
+  S.oilT+=(target-S.oilT)*(1-Math.exp(-dt/tau));
+}
+const O={gear:0,fu:null};
+build.oil=function(){
+  const {fig,side}=mkSection('oil','Oil system',
+    'A wet-sump system: oil lives in the sump, a crankshaft-driven pump pushes it through the cooler and filter to every bearing, and gravity drains it back. It lubricates, cools and cleans, and the two gauges tell you if it is doing that job.');
+  const svg=mkSvg(fig,760,545,'Oil system schematic with sump, pump, relief valve, cooler, filter, galleries, bearings, pressure and temperature gauges and a dipstick');
+  const g=sv('g',null,svg);const OIL='var(--oil)';const o={};
+  sv('rect',{x:20,y:60,width:500,height:352,rx:16,fill:'none',stroke:'var(--metal)','stroke-dasharray':'6 6','stroke-width':1.5},g);
+  tx(g,32,80,'Engine',{a:'start',s:13,c:'var(--mute)'});
+  // sump
+  box(g,130,420,280,84,{rx:10});
+  o.fill=sv('rect',{x:134,y:500,width:272,height:0,fill:OIL,opacity:.6,rx:6},g);
+  tx(g,270,522,'Sump (wet sump, 8 qt)',{s:13,w:600});
+  box(g,190,406,60,14,{rx:3,f:'var(--metal2)'});tx(g,184,418,'Pickup screen',{s:11,c:'var(--mute)',a:'end'});
+  // pipes
+  o.pPick=pipe('oil',g,'M220 406V372',OIL,7);
+  o.pJ=pipe('oil',g,'M220 322V252',OIL,7);
+  o.pRelIn=pipe('oil',g,'M220 298H85V330',OIL,5);
+  o.pRelOut=pipe('oil',g,'M85 366V462H130',OIL,5);
+  o.pByp=pipe('oil',g,'M220 228V172',OIL,6);
+  o.pCool1=pipe('oil',g,'M208 240H85V232',OIL,6);
+  o.pCool2=pipe('oil',g,'M85 180V148H190',OIL,6);
+  o.pFilt=pipe('oil',g,'M220 126V100',OIL,7);
+  o.pGal=pipe('oil',g,'M70 100H470',OIL,7);
+  o.pMain=pipe('oil',g,'M320 100V234',OIL,6);
+  o.pCam=pipe('oil',g,'M400 100V218H410',OIL,6);
+  o.pRock=pipe('oil',g,'M470 100V118',OIL,5);
+  o.pPush=pipe('oil',g,'M470 190V158',OIL,4);
+  o.pDr1=pipe('oil',g,'M330 290V420',OIL,4);
+  o.pDr2=pipe('oil',g,'M505 246V462H410',OIL,4);
+  // components
+  box(g,180,322,80,50,{rx:8});
+  o.gears=sv('g',null,g);
+  [[203,346],[237,346]].forEach((c,i)=>{const gg=sv('g',{transform:'translate('+c[0]+' '+c[1]+')'},o.gears);sv('circle',{r:13,fill:'var(--metal2)',stroke:'var(--ink)'},gg);for(let k=0;k<6;k++){const a=k*60;line(gg,0,0,13*Math.sin(rad(a)),-13*Math.cos(rad(a)),'var(--ink)',3)}o['gear'+i]=gg});
+  tx(g,172,350,'Oil pump',{a:'end',s:12});tx(g,172,364,'gear type',{a:'end',s:10,c:'var(--mute)'});
+  box(g,60,330,50,36,{rx:6});o.ball=sv('circle',{cx:85,cy:348,r:7,fill:'var(--ink)'},g);
+  tx(g,32,384,'Pressure relief valve',{a:'start',s:12});tx(g,32,397,'opens above about 90 psi',{a:'start',s:10,c:'var(--mute)'});
+  o.therm=sv('circle',{cx:220,cy:240,r:12,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2},g);
+  tx(g,206,270,'Thermostat',{a:'end',s:12});
+  box(g,55,180,60,52,{rx:6});for(let k=0;k<4;k++)line(g,62,190+k*11,108,190+k*11,'var(--metal)',2);tx(g,85,254,'Oil cooler',{s:12});
+  o.filt=box(g,190,126,60,46,{rx:6});tx(g,220,154,'Filter',{s:13});
+  o.fclog=tx(g,155,160,'',{a:'end',s:11,c:'var(--bad)',w:600});
+  tx(g,250,86,'Main oil gallery',{a:'start',s:12});
+  box(g,430,118,80,40,{rx:6});tx(g,470,142,'Rocker arms',{s:12});
+  box(g,410,190,90,56,{rx:6});tx(g,455,214,'Camshaft',{s:12});tx(g,455,230,'and lifters',{s:12});
+  sv('circle',{cx:320,cy:262,r:32,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2},g);
+  o.crank=sv('g',{transform:'translate(320 262)'},g);line(o.crank,-20,0,20,0,'var(--ink)',6);sv('circle',{cx:20,cy:0,r:6,fill:'var(--oil)',stroke:'var(--ink)'},o.crank);
+  sv('circle',{cx:320,cy:262,r:5,fill:'var(--ink)'},g);
+  tx(g,360,296,'Crankshaft',{a:'start',s:12});tx(g,360,310,'main bearings',{a:'start',s:12});
+  tx(g,362,258,'Splash and spray',{a:'start',s:11,c:'var(--mute)'});tx(g,362,271,'cool pistons and walls',{a:'start',s:11,c:'var(--mute)'});
+  tx(g,455,262,'',{s:10});
+  // gauges
+  o.gP=gauge(g,650,100,76,{min:0,max:115,ticks:[0,20,40,60,80,100].map(v=>[v,v]),bands:[[0,25,'var(--bad)'],[25,60,'var(--warn)'],[60,90,'var(--ok)'],[90,100,'var(--warn)'],[100,115,'var(--bad)']],title:'OIL psi'});
+  o.gT=gauge(g,650,268,76,{min:50,max:250,ticks:[[75,75],[125,125],[175,175],[245,245]],bands:[[75,245,'var(--ok)'],[245,250,'var(--bad)']],title:'OIL \u00b0F'});
+  // dipstick
+  tx(g,650,376,'Dipstick',{s:13,w:600});
+  box(g,636,384,28,132,{rx:6});
+  o.dip=sv('rect',{x:639,y:513,width:22,height:0,fill:OIL,opacity:.65,rx:3},g);
+  const yAt=q=>513-126*(q/8);
+  line(g,630,yAt(8),670,yAt(8),'var(--ink)',1.5);tx(g,628,yAt(8)+4,'8',{a:'end',s:11});
+  line(g,630,yAt(6),670,yAt(6),'var(--bad)',1.5);tx(g,628,yAt(6)+4,'6',{a:'end',s:11,c:'var(--bad)'});
+  o.qt=tx(g,650,536,'',{s:13,w:600});
+  tx(g,676,yAt(8)+4,'full',{a:'start',s:11,c:'var(--mute)'});tx(g,676,yAt(6)+4,'school min',{a:'start',s:11,c:'var(--bad)'});
+  O.o=o;
+
+  const c0=card(side,'What is happening');o.say=saybox(c0);
+  const c1=card(side,'Controls');
+  const b0=el('div',{class:'btns'},c1);btn(b0,'Start the engine',quickStart,'primary');btn(b0,'Shut down',shutDown);
+  rng('oil',c1,'Throttle',0,100,1,()=>S.thr,v=>S.thr=v,v=>v<3?'Closed':f0(v)+'%');
+  rng('oil',c1,'Oil quantity',0,8,0.25,()=>S.oilQty,v=>S.oilQty=v,v=>v.toFixed(2)+' qt');
+  el('p',{class:'note'},c1).textContent='Time passes quickly here: the oil warms up in well under a minute so you can see the whole cycle.';
+  const c2=card(side,'Faults');
+  sw('oil',c2,'Oil leak (level falls)',()=>S.oilLeak,v=>S.oilLeak=v,'bad');
+  sw('oil',c2,'Worn pump (low pressure)',()=>S.pumpFail,v=>S.pumpFail=v,'bad');
+  sw('oil',c2,'Clogged filter (bypass opens)',()=>S.filterClog,v=>S.filterClog=v,'bad');
+  const c3=card(side,'Where the oil goes');o.chain=chain(c3);
+  const c4=card(side,'Reading the gauges');
+  facts(c4,['Pressure: green 60 to 90 psi, minimum 25 psi at idle, maximum 100 psi.','Temperature: green 75 to 245 \u00b0F. Wait for the needle to reach the green before takeoff.','Cold oil is thick, so pressure starts high. No pressure within about 30 seconds of starting means shut down.','The sump holds 8 qt. Many operators want at least 6 before flight, so check the dipstick on every preflight and follow your POH and school rules.']);
+};
+draw.oil=function(dt){
+  const o=O.o;
+  O.gear+=S.rpm*0.09*dt*1.5;
+  o.gear0.setAttribute('transform','translate(203 346) rotate('+(O.gear%360).toFixed(1)+')');
+  o.gear1.setAttribute('transform','translate(237 346) rotate('+(-O.gear%360).toFixed(1)+')');
+  o.crank.setAttribute('transform','translate(320 262) rotate('+(O.gear%360).toFixed(1)+')');
+  const lvl=clamp(S.oilQty/8,0,1);o.fill.setAttribute('height',(76*lvl).toFixed(1));o.fill.setAttribute('y',(500-76*lvl).toFixed(1));
+  o.dip.setAttribute('height',(126*lvl).toFixed(1));o.dip.setAttribute('y',(513-126*lvl).toFixed(1));
+  o.qt.textContent=S.oilQty.toFixed(2)+' qt';
+  const flow=S.oilP>3?clamp(S.oilP,0,100)*0.9:0;const ps=flow;
+  const hot=clamp((S.oilT-160)/30,0,1);
+  o.pPick.set(ps);o.pJ.set(ps);o.pRelIn.set(S.oilPraw>85?ps:0);o.pRelOut.set(S.oilPraw>85?ps*0.6:0);
+  o.pByp.set(ps*(1-hot));o.pCool1.set(ps*hot);o.pCool2.set(ps*hot);
+  o.pFilt.set(ps);o.pGal.set(ps);o.pMain.set(ps);o.pCam.set(ps);o.pRock.set(ps*0.7);o.pPush.set(ps*0.7);
+  o.pDr1.set(ps*0.6);o.pDr2.set(ps*0.6);
+  o.ball.setAttribute('cy',S.oilPraw>85?354:348);
+  o.therm.setAttribute('fill',hot>0.5?'var(--oil)':'var(--raise)');
+  o.fclog.textContent=S.filterClog?'Filter blocked: bypass open':'';
+  o.gP.set(S.oilP);o.gT.set(S.oilT);
+  let s;
+  if(S.rpm<40)s='The engine is stopped, so the crankshaft is not driving the pump and there is no pressure. All the oil is sitting in the sump.';
+  else if(S.oilP<25&&S.rpm>500)s='Oil pressure is below the 25 psi minimum. In a real aircraft this means shut the engine down: bearings are starving.'+(S.oilQty<1.5?' The sump is nearly empty, so the pump is sucking air.':'');
+  else if(S.oilQty<6)s='The oil level is below the 6 qt that many operators require before flight. Pressure and cooling both suffer as the level falls, and temperature climbs.';
+  else if(S.oilT<75)s='The oil is cold and thick, so it flows hard and pressure reads high. It is bypassing the cooler. Let it warm up until the needle is in the green arc before takeoff.';
+  else if(S.oilT>=245)s='Oil temperature is at the red line. Reduce power and land as soon as practical.';
+  else if(hot>0.3)s='The oil is hot, so the thermostat sends it through the cooler where air carries the heat away.';
+  else s='Pressure is '+f0(S.oilP)+' psi. The pump is moving oil through the filter to the bearings, and it drains back to the sump carrying heat with it.';
+  if(S.filterClog&&S.running)s+=' The filter is blocked, so the bypass valve opens to keep oil flowing. It is not being cleaned.';
+  o.say.set(s);
+  o.chain.set([['Oil waits in the sump',S.oilQty>0.5],['The crankshaft turns the gear pump',S.rpm>100],['The pump pulls oil through the pickup screen',S.rpm>100&&S.oilQty>1.5],
+    ['The relief valve caps pressure when it climbs too high',S.oilPraw>85],['Cold oil bypasses the cooler; hot oil goes through it',S.running&&S.oilP>10],['The filter removes metal and dirt',S.running&&S.oilP>10],
+    ['The gallery feeds main bearings, camshaft, lifters and rockers',S.oilP>10],['Oil drains back to the sump, carrying heat away',S.oilP>10]]);
+};
+/* ---------- ELECTRICAL ---------- */
+const LOADS=[
+  {id:'nav',name:'Navigation lights',a:5},
+  {id:'strobe',name:'Strobe lights',a:4},
+  {id:'beacon',name:'Rotating beacon',a:3},
+  {id:'land',name:'Landing light',a:9},
+  {id:'pitotHeat',name:'Pitot heat',a:6},
+  {id:'cabin',name:'Cabin and panel lights',a:2},
+  {id:'fuelPump',name:'Electric fuel pump',a:4}
+];
+function simElec(dt){
+  const altOk=S.alt&&!S.altFail&&S.bat&&S.rpm>1000;
+  const ramp=clamp((S.rpm-900)/300,0,1);
+  S.busLive=!!(S.bat&&(S.soc>0.5||(altOk&&S.rpm>1100)));
+  let load=0;S.loadOn={};
+  LOADS.forEach(l=>{const on=S.busLive&&S.sw[l.id]&&S.cb[l.id];S.loadOn[l.id]=on;if(on)load+=l.a});
+  const av=S.busLive&&S.av&&S.cb.avionics;S.loadOn.avionics=av;if(av)load+=8;
+  S.instOn=S.busLive&&S.cb.inst;if(S.instOn)load+=2.5;
+  if(S.busLive&&S.cranking)load+=110;
+  if(!S.busLive)load=0;
+  let out=0,batI;
+  if(altOk&&S.busLive){const demand=(1-S.soc/100)*18+1;out=Math.min(60*ramp,load+demand);batI=out-load}
+  else batI=S.busLive?-load:0;
+  S.altOut=out;S.load=load;S.batI+=(batI-S.batI)*clamp(dt*6,0,1);
+  S.soc=clamp(S.soc+batI*dt*S.ts/3600/35*100,0,100);
+  let v=0;
+  if(S.busLive){
+    const voc=11.4+1.2*Math.pow(S.soc/100,0.7);
+    if(out>0)v=(batI<0)?(14.0-0.012*(-batI)):13.9+0.2*ramp;
+    else v=voc-0.015*Math.max(0,-batI);
+  }
+  S.volts+=(v-S.volts)*clamp(dt*8,0,1);if(!S.busLive&&S.volts<0.2)S.volts=0;
+}
+
+const EL={};
+build.elec=function(){
+  const {fig,side}=mkSection('elec','Electrical system',
+    '14-volt DC. The battery starts the engine, then the engine-driven alternator carries the loads and recharges the battery. On this panel the ammeter shows what the alternator is delivering. Switch things on and watch the meters, the battery and the bus react.');
+  const svg=mkSvg(fig,760,560,'Electrical system schematic: battery, master contactor, alternator, main bus, circuit breakers and loads');
+  const g=sv('g',null,svg);const Y='var(--elec)';const e=EL;
+  // battery
+  box(g,24,196,92,62,{rx:8});tx(g,70,222,'Battery',{s:14,w:600});tx(g,70,240,'12 V, about 35 Ah',{s:11,c:'var(--mute)'});
+  e.soc=sv('rect',{x:30,y:262,width:80,height:8,rx:3,fill:'var(--ok)'},g);box(g,30,262,80,8,{rx:3,f:'none'});
+  e.socT=tx(g,70,284,'',{s:12});
+  // contactor
+  box(g,170,210,64,34,{rx:6});tx(g,202,238,'Master',{s:12});tx(g,202,205,'Battery contactor',{s:11,c:'var(--mute)'});
+  e.contact=line(g,176,219,228,219,'var(--ink)',3);
+  // alternator
+  box(g,24,360,110,66,{rx:8});tx(g,79,386,'Alternator',{s:14,w:600});tx(g,79,404,'60 A, belt driven',{s:11,c:'var(--mute)'});
+  box(g,170,378,76,34,{rx:6});tx(g,208,400,'Regulator',{s:12});
+  e.altf=tx(g,79,446,'',{s:12,w:600});
+  // bus
+  e.bus=box(g,300,40,24,440,{rx:6,f:'var(--raise)'});tx(g,312,30,'Main bus',{s:13,w:600});
+  // ammeter + starter
+  tx(g,250,162,'',{s:11});
+  box(g,170,140,76,34,{rx:6});tx(g,208,162,'Starter',{s:12});line(g,208,174,208,190,'var(--metal)',2);
+  // wires
+  e.w1=pipe('elec',g,'M116 227H170',Y,6);
+  e.w2=pipe('elec',g,'M234 227H312',Y,6);
+  e.w3=pipe('elec',g,'M134 393H170',Y,6);
+  e.w4=pipe('elec',g,'M246 395H312',Y,6);
+  e.w5=pipe('elec',g,'M246 157H312',Y,6);
+  // loads
+  const rows=[['nav','Nav lights'],['strobe','Strobe'],['beacon','Beacon'],['land','Landing light'],['pitotHeat','Pitot heat'],['cabin','Cabin lights'],['fuelPump','Fuel pump'],['inst','Instruments'],['avionics','Avionics']];
+  e.rows={};
+  rows.forEach((r,i)=>{
+    const y=40+i*50;
+    const wire=pipe('elec',g,'M312 '+(y+14)+'H380',Y,5);
+    // circuit breaker
+    const cbg=sv('g',{class:'hot',tabindex:0,role:'button','aria-label':'Circuit breaker '+r[1]},g);
+    const cb=box(cbg,380,y,46,28,{rx:6});
+    const stem=sv('rect',{x:395,y:y-6,width:16,height:12,rx:3,fill:'var(--ink)'},cbg);stem._y=y-6;
+    tx(cbg,403,y+19,'CB',{s:11});
+    const key=r[0];
+    const tgl=()=>{if(key!=='flap'||true)S.cb[key]=!S.cb[key]};
+    cbg.onclick=tgl;cbg.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();tgl()}};
+    const wire2=pipe('elec',g,'M426 '+(y+14)+'H470',Y,5);
+    const lamp=sv('circle',{cx:490,cy:y+14,r:12,fill:'var(--raise)',stroke:'var(--metal)','stroke-width':2},g);
+    tx(g,512,y+19,r[1],{a:'start',s:14});
+    const amp=tx(g,740,y+19,'',{a:'end',s:13,c:'var(--mute)'});
+    e.rows[key]={wire,wire2,cb,stem,lamp,amp};
+  });
+  tx(g,403,22,'Circuit breakers',{s:12,c:'var(--mute)'});tx(g,403,34,'(click to pull)',{s:11,c:'var(--mute)'});
+  // meters
+  e.am=gauge(g,62,88,46,{min:0,max:60,ticks:[[0,'0'],[20,'20'],[40,'40'],[60,'60']],bands:[[0,60,'var(--ok)']],title:'ALT AMPS'});
+  e.vm=gauge(g,172,88,42,{min:8,max:16,ticks:[[8,'8'],[12,'12'],[16,'16']],bands:[[8,12.4,'var(--bad)'],[12.4,15,'var(--ok)'],[15,16,'var(--warn)']],title:'VOLTS',fmt:v=>v.toFixed(1)});
+  e.t1=tx(g,24,310,'',{a:'start',s:13});e.t2=tx(g,24,328,'',{a:'start',s:13});e.t3=tx(g,24,346,'',{a:'start',s:13,c:'var(--mute)'});
+  e.lv=box(g,24,470,120,34,{rx:6});e.lvT=tx(g,84,492,'ALT OUT',{s:13,w:700});
+
+  const c0=card(side,'What is happening');e.say=saybox(c0);
+  const c1=card(side,'Master and charging');
+  const two=el('div',{class:'two'},c1);
+  sw('elec',two,'BAT switch (master)',()=>S.bat,v=>S.bat=v,'elec');
+  sw('elec',two,'ALT switch',()=>S.alt,v=>S.alt=v,'elec');
+  sw('elec',c1,'Avionics master',()=>S.av,v=>S.av=v,'elec');
+  const b1=el('div',{class:'btns'},c1);btn(b1,'Start the engine',quickStart,'primary');btn(b1,'Shut down',shutDown);
+  rng('elec',c1,'Throttle',0,100,1,()=>S.thr,v=>S.thr=v,v=>v<3?'Closed':f0(v)+'%');
+  const c2=card(side,'Switches');
+  const tw=el('div',{class:'two'},c2);
+  LOADS.forEach(l=>sw('elec',tw,l.name,()=>S.sw[l.id],v=>S.sw[l.id]=v,'elec'));
+  const c3=card(side,'Faults');
+  sw('elec',c3,'Alternator failure',()=>S.altFail,v=>S.altFail=v,'bad');
+  const bb=el('div',{class:'btns'},c3);btn(bb,'Recharge battery',()=>S.soc=100);btn(bb,'Drain battery to 15%',()=>S.soc=15);
+  const c4=card(side,'Power chain');e.chain=chain(c4);
+  const c5=card(side,'Handy facts');
+  facts(c5,['Separate BAT and ALT switches. The alternator only works with the battery switch on, because the battery excites its field.','The alternator starts charging above roughly 1,000 RPM. At idle the battery may still be discharging.','On most Warriors the ammeter shows alternator output, not battery current. Zero with the ALT switch on and the engine above idle means no charging.','A tripped circuit breaker is a pulled-out button. Reset a breaker once at most.','If the alternator fails, switch off non-essential loads and land where practical. The battery will not last forever.']);
+};
+draw.elec=function(dt){
+  const e=EL;
+  e.am.set(S.altOut,f0(S.altOut));e.vm.set(S.volts,S.busLive?f1(S.volts):'');
+  e.soc.setAttribute('width',(80*S.soc/100).toFixed(1));
+  e.soc.setAttribute('fill',S.soc>40?'var(--ok)':S.soc>15?'var(--warn)':'var(--bad)');
+  e.socT.textContent='Charge '+f0(S.soc)+'%';
+  e.contact.setAttribute('y2',S.bat?219:205);e.contact.setAttribute('stroke',S.bat?'var(--ok)':'var(--ink)');
+  const altOn=S.altOut>0.5;
+  e.w1.set(S.busLive&&S.batI<-0.5?clamp(-S.batI*2,10,90):(S.busLive&&S.batI>0.5?clamp(S.batI*3,10,60):0));
+  e.w2.set(S.busLive&&Math.abs(S.batI)>0.5?clamp(Math.abs(S.batI)*2,10,90):0);
+  e.w3.set(altOn?clamp(S.altOut*2,10,90):0);e.w4.set(altOn?clamp(S.altOut*2,10,90):0);
+  e.w5.set(S.busLive&&S.cranking?90:0);
+  e.bus.setAttribute('fill',S.busLive?'rgba(244,211,79,.35)':'var(--raise)');
+  e.altf.textContent=S.altFail?'FAILED':(S.alt?(S.altOut>0.5?'Output '+f0(S.altOut)+' A':(S.rpm<1000?'Not charging yet':'Offline')):'Switched off');
+  e.altf.setAttribute('fill',S.altFail?'var(--bad)':'var(--ink)');
+  const rows=e.rows;
+  const amps={nav:5,strobe:4,beacon:3,land:9,pitotHeat:6,cabin:2,fuelPump:4,inst:2.5,avionics:8};
+  Object.keys(rows).forEach(k=>{
+    const r=rows[k];const on=k==='inst'?S.instOn:S.loadOn[k];
+    const cbIn=S.cb[k];
+    r.stem.setAttribute('y',r.stem._y+(cbIn?0:-8));
+    r.cb.setAttribute('stroke',cbIn?'var(--metal)':'var(--bad)');
+    r.wire.set(on?40:0);r.wire2.set(on?40:0);
+    r.lamp.setAttribute('fill',on?(k==='cabin'||k==='nav'?'#ffe58a':'var(--elec)'):'var(--raise)');
+    r.amp.textContent=on?amps[k]+' A':(cbIn?'':'pulled');
+  });
+  const alo=S.alt&&S.busLive&&S.altOut<0.5;e.lvT.setAttribute('fill',alo?'#fff':'var(--mute)');
+  e.lv.setAttribute('fill',alo?'var(--bad)':'var(--raise)');
+  e.t1.textContent='Bus voltage: '+f1(S.volts)+' V';
+  e.t2.textContent='Total load: '+f1(S.load)+' A';
+  e.t3.textContent=S.busLive?(S.batI>=0.5?'Battery charging':S.batI<=-0.5?'Battery discharging':'Battery floating'):'Bus is dead';
+  let s;
+  if(!S.bat)s='The BAT switch is off, so the battery contactor is open and the main bus is dead. Nothing electrical works, but the engine still would: the magnetos need no power.';
+  else if(S.cranking)s='The starter is drawing about 110 A from the battery. The ammeter swings hard negative and the voltage sags. That is normal and lasts only a few seconds.';
+  else if(S.altFail&&S.running)s='The alternator has failed. The ammeter reads zero, the ALT OUT light is on and the voltmeter is sliding down because the battery is carrying every load. Switch off non-essential loads to stretch the battery, and land.';
+  else if(altOn&&S.batI<-0.5)s='The loads are bigger than the alternator can supply, so the battery is making up the difference.';
+  else if(altOn)s='The alternator is delivering '+f0(S.altOut)+' A, which is what the ammeter shows. It carries all the loads, tops the battery up with the remainder, and holds the bus near 14 V.';
+  else if(S.alt&&S.running&&S.rpm<1000)s='RPM is too low for the alternator to cut in. Raise the throttle a little. Until then the battery supplies everything.';
+  else if(S.volts>0&&S.volts<12.4)s='Voltage is low and the battery is discharging. Without the alternator working, the battery is all there is.';
+  else s='The battery is supplying the bus at about '+f1(S.volts)+' V. Start the engine and switch the alternator on to let it recharge.';
+  e.say.set(s);
+  e.chain.set([['BAT switch ON closes the battery contactor',S.bat],['Battery feeds the main bus',S.busLive],['Starter draws heavy current to crank the engine',S.cranking],
+    ['Engine turns the alternator above about 1,000 RPM',S.alt&&S.rpm>1000&&!S.altFail],['Regulator holds the bus near 14 V and recharges the battery',altOn],
+    ['Breakers protect each circuit; switches select what is powered',S.busLive&&S.load>0]]);
+};
+/* ---------- FLAPS (PA-28-161: manual lever, plain flaps) ---------- */
+const FL={ias:80,rel:false,msg:0,off:0,ui:null};
+const FSET=[0,10,25,40];
+function simFlap(dt){
+  const diff=S.flapSel-S.flap;
+  const rate=50*(1-0.5*clamp((FL.ias-80)/60,0,1));
+  S.flap+=clamp(diff,-rate*dt,rate*dt);
+  FL.msg=Math.max(0,FL.msg-dt);
+}
+function setFlap(a){
+  if(a<S.flapSel&&!FL.rel){FL.msg=3;return}
+  S.flapSel=a;
+}
+function flapStats(a){
+  const clmax=1.45+0.0085*a;
+  return{clmax,lift:clmax/1.45*100,drag:100*(1+2.0*Math.pow(a/40,1.4)),vs:55*Math.sqrt(1.45/clmax)};
+}
+build.flaps=function(){
+  const {fig,side}=mkSection('flaps','Flaps',
+    'Plain flaps worked by hand. A lever between the front seats goes up to extend them and locks in a notch. Nothing electrical is involved, so they work even with every switch off. Move the lever, then see how the flap, the airflow and the load on your arm respond.');
+  const svg=mkSvg(fig,760,560,'Wing cross-section with a moving plain flap and streamlines, the flap lever with its ratchet, and the chain of parts between the lever and the flap');
+  const g=sv('g',null,svg);const f=FL.ui={};
+  tx(g,230,22,'Wing section, flap shown at actual angle',{s:14,w:600});
+  const wg=sv('g',{transform:'translate(100 125) scale(1.15)'},g);
+  f.lines=[];
+  for(let i=0;i<8;i++){const up=i<5;const d=up?8+i*11:10+(i-5)*12;const p=sv('path',{d:'M0 0',stroke:'var(--air)','stroke-width':2,fill:'none','stroke-dasharray':'8 10','stroke-linecap':'round',opacity:.85},wg);f.lines.push({p,up,d})}
+  sv('path',{d:'M0 0C-4 -14 6 -28 40 -34C90 -42 150 -36 214 -14L214 12C150 22 70 26 30 20C8 16 2 8 0 0Z',fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},wg);
+  f.flap=sv('g',null,wg);
+  sv('path',{d:'M214 -14L298 -4L298 2L214 12Z',fill:'var(--metal2)',stroke:'var(--ink)','stroke-width':2},f.flap);
+  f.hinge=sv('circle',{cx:214,cy:-1,r:3,fill:'var(--ink)'},wg);
+  f.angle=tx(g,230,252,'',{s:18,w:700,x:{'font-family':'var(--head)'}});
+  tx(g,50,54,'Air flow',{s:12,c:'var(--mute)'});
+  // effects
+  const ex=560;
+  tx(g,ex+90,66,'What the flap changes',{s:14,w:600});
+  f.bars=[['Lift at the stall','lift','var(--ok)'],['Drag','drag','var(--hyd)'],['Load on the lever','load','var(--warn)']].map((b,i)=>{
+    const y=84+i*50;tx(g,ex,y+12,b[0],{a:'start',s:12});box(g,ex,y+18,180,12,{rx:6,f:'var(--raise)'});
+    const r=sv('rect',{x:ex,y:y+18,width:10,height:12,rx:6,fill:b[2]},g);const t=tx(g,ex+180,y+12,'',{a:'end',s:12,w:600});return{r,t}});
+  f.vs=tx(g,ex,244,'',{a:'start',s:13,w:600});
+  f.ov=tx(g,ex,264,'',{a:'start',s:12,w:600,c:'var(--bad)'});
+  // lever and ratchet (side view of the lever between the seats)
+  tx(g,120,282,'Flap lever',{s:14,w:600});
+  const px=70,py=470;
+  f.ratch=[];
+  FSET.forEach(a=>{const th=-a*1.6;const p0=polar2(px,py,96,th),p1=polar2(px,py,116,th);line(g,p0[0],p0[1],p1[0],p1[1],'var(--ink)',2);const q=polar2(px,py,134,th);tx(g,q[0]+6,q[1]+4,a+'\u00b0',{a:'start',s:13,w:600})});
+  sv('path',{d:'M'+polar2(px,py,106,0).join(' ')+'A106 106 0 0 0 '+polar2(px,py,106,-64).join(' '),stroke:'var(--metal)','stroke-width':3,fill:'none'},g);
+  f.lever=sv('g',{transform:'translate('+px+' '+py+')'},g);
+  line(f.lever,0,0,140,0,'var(--ink)',8);
+  f.btn=sv('circle',{cx:140,cy:0,r:9,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':3},f.lever);
+  sv('circle',{cx:0,cy:0,r:9,fill:'var(--metal)',stroke:'var(--ink)','stroke-width':2},f.lever);
+  tx(g,px,py+30,'Pivot',{s:11,c:'var(--mute)'});
+  f.btnT=tx(g,px+148,py+34,'release button',{a:'middle',s:11,c:'var(--mute)'});
+  FSET.forEach(a=>{const th=-a*1.6;const p=polar2(px,py,108,th);const z=sv('circle',{cx:p[0],cy:p[1],r:22,fill:'transparent',class:'hot',tabindex:0,role:'button','aria-label':'Set flaps to '+a+' degrees'},g);z.onclick=()=>setFlap(a);z.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setFlap(a)}}});
+  f.lock=tx(g,120,530,'',{s:12,w:600,c:'var(--bad)'});
+  // chain blocks
+  const cx=300;tx(g,cx+200,330,'What moves the flap',{s:14,w:600});
+  const names=[['Handle','you pull it up'],['Ratchet','locks in a notch'],['Cables and rods','run to both wings'],['Bellcranks','turn it into a push'],['Flaps','hinge down'],['Return spring','helps raise them']];
+  f.blk=names.map((n,i)=>{const col=i%3,row=Math.floor(i/3);const x=cx+col*150-60,y=346+row*86;
+    const r=box(g,x,y,128,56,{rx:10});tx(g,x+64,y+25,n[0],{s:14,w:700,x:{'font-family':'var(--head)'}});tx(g,x+64,y+43,n[1],{s:10,c:'var(--mute)'});return r});
+  const arr=(x1,y1,x2,y2)=>{line(g,x1,y1,x2,y2,'var(--metal)',2);sv('path',{d:'M'+x2+' '+y2+'l-8 -5v10z',fill:'var(--metal)'},g)};
+  arr(cx+68,374,cx+90,374);arr(cx+218,374,cx+240,374);arr(cx+68,460,cx+90,460);arr(cx+218,460,cx+240,460);
+  line(g,cx+330,402,cx+330,418,'var(--metal)',2);line(g,cx+330,418,cx+4,418,'var(--metal)',2);line(g,cx+4,418,cx+4,432,'var(--metal)',2);sv('path',{d:'M'+(cx+4)+' 432l-5 -8h10z',fill:'var(--metal)'},g);
+  tx(g,cx+135,520,'Everything here is mechanical: no motor and no electrics.',{s:11,c:'var(--mute)'});
+
+  const c0=card(side,'What is happening');f.say=saybox(c0);
+  const c1=card(side,'Controls');
+  seg('flaps',c1,'Flap lever',[[0,'Up'],[10,'10\u00b0'],[25,'25\u00b0'],[40,'40\u00b0']],()=>S.flapSel,setFlap);
+  const rb=el('div',{class:'btns'},c1);
+  hold(rb,'Hold the release button',()=>FL.rel=true,()=>FL.rel=false);
+  el('p',{class:'note'},c1).textContent='Pulling the lever up to extend always works. To raise the flaps you must hold the release button while you lower the lever.';
+  rng('flaps',c1,'Airspeed',45,130,1,()=>FL.ias,v=>FL.ias=v,v=>f0(v)+' KIAS');
+  const c2=card(side,'Sequence');f.chain=chain(c2);
+  const c3=card(side,'Handy facts');
+  facts(c3,['Four settings: up, 10, 25 and 40 degrees. The flap extension limit (VFE) is 103 KIAS.','The flaps make more lift at a given speed, so the stall speed falls: about 55 KIAS clean and 49 KIAS with full flaps at maximum weight.','They add a lot of drag, which steepens the approach path without adding speed.','At higher speed the airflow pushes the flaps up and the lever gets heavy. That load is why the ratchet and release button exist.','Many pilots use 25 degrees for a short or soft field takeoff. Follow your POH for each phase.','Plain flaps are simpler than slotted ones, and nothing electrical can fail. Figures here are rounded for teaching.']);
+};
+function polar2(cx,cy,r,deg){const t=rad(deg);return[+(cx+r*Math.cos(t)).toFixed(1),+(cy+r*Math.sin(t)).toFixed(1)]}
+draw.flaps=function(dt){
+  const f=FL.ui;const a=S.flap;
+  FL.off-=40*dt*(reduce?0.25:1);
+  f.flap.setAttribute('transform','rotate('+(a*0.9).toFixed(1)+' 214 -1)');
+  const t=Math.tan(rad(a*0.9))*0.9;
+  f.lines.forEach((l,i)=>{
+    let d='';
+    for(let x=-70;x<=360;x+=15){
+      let y;
+      if(l.up)y=-(l.d+36*Math.exp(-Math.pow((x-95)/115,2))*Math.exp(-l.d/45))+(x>214?(x-214)*t*(0.3+0.05*i):0);
+      else y=(l.d+4*Math.exp(-Math.pow((x-95)/115,2)))+(x>200?(x-200)*t*0.5:0);
+      d+=(x===-70?'M':'L')+x+' '+y.toFixed(1);
+    }
+    l.p.setAttribute('d',d);l.p.setAttribute('stroke-dashoffset',FL.off.toFixed(1));
+  });
+  f.angle.textContent='Flaps '+f0(a)+'\u00b0'+(Math.abs(a-S.flapSel)>0.5?' (moving to '+S.flapSel+'\u00b0)':'');
+  f.lever.setAttribute('transform','translate(70 470) rotate('+(-S.flap*1.6).toFixed(1)+')');
+  f.btn.setAttribute('fill',FL.rel?'var(--ok)':'var(--raise)');
+  const st=flapStats(a);
+  const load=clamp(Math.pow(FL.ias/103,2)*(a/40)*100,0,160);
+  f.bars[0].r.setAttribute('width',(180*clamp(st.lift/150,0.06,1)).toFixed(1));f.bars[0].t.textContent=f0(st.lift)+'%';
+  f.bars[1].r.setAttribute('width',(180*clamp(st.drag/300,0.06,1)).toFixed(1));f.bars[1].t.textContent=f0(st.drag)+'%';
+  f.bars[2].r.setAttribute('width',(180*clamp(load/120,0.04,1)).toFixed(1));f.bars[2].t.textContent=f0(load)+'%';
+  f.bars[2].r.setAttribute('fill',load>100?'var(--bad)':'var(--warn)');
+  f.vs.textContent='Stall speed about '+f0(st.vs)+' KIAS';
+  const over=FL.ias>103&&(S.flap>1||S.flapSel>0);
+  f.ov.textContent=over?'Above 103 KIAS: flap overspeed':'';
+  f.lock.textContent=FL.msg>0?'The ratchet holds the lever. Press and hold the release button to lower it.':'';
+  const moving=Math.abs(S.flapSel-S.flap)>0.5;
+  let s;
+  if(FL.msg>0)s='The lever is locked in its notch by a spring-loaded ratchet, so it will not drop. Hold the release button on the handle, then lower the lever. Going the other way needs no button: the ratchet clicks over each notch as you pull up.';
+  else if(moving)s='You are moving the lever to '+S.flapSel+'\u00b0. The linkage carries your movement through cables and bellcranks to both flaps, which hinge down. The ratchet will lock the lever when it reaches the notch.';
+  else if(S.flap<1)s='Flaps are up: the wing is at its cleanest, with the lowest drag and the highest stall speed ('+f0(st.vs)+' KIAS). The ratchet is locked in the first notch.';
+  else s='The flaps are held at '+f0(S.flap)+'\u00b0 by the ratchet. The wing has more camber, so it can fly slower (stall about '+f0(st.vs)+' KIAS), at the cost of '+f0(st.drag-100)+'% more drag. The airflow is pushing the flaps up with '+f0(load)+'% of the load you could comfortably hold.';
+  if(over)s+=' You are above the 103 KIAS flap limit, so the airloads could bend the flaps or their linkage.';
+  else if(load>100)s+=' The load on the lever is very high at this speed.';
+  f.say.set(s);
+  const mv=moving||FL.msg>0;
+  f.blk.forEach((b,i)=>{const on=[mv,mv&&FL.msg<=0,moving,moving,moving,S.flap>1&&S.flapSel<S.flap][i];b.setAttribute('fill',on?'rgba(76,212,203,.30)':'var(--raise)');b.setAttribute('stroke',on?'var(--air)':'var(--metal)')});
+  f.chain.set([['You pull the lever up (or lower it while holding the release button)',moving],['The ratchet clicks into a notch and locks the lever',!moving&&S.flapSel>0],['Cables and rods carry the movement to both wings',moving],['Bellcranks turn the pull into a push on each flap',moving],['The flaps hinge down and the wing gains camber',S.flap>1],['A return spring helps raise the flaps when you release the ratchet',S.flap>1&&S.flapSel<S.flap]]);
+};
+resets.push(()=>{FL.rel=false;FL.msg=0});
+/* ---------- FLIGHT CONTROLS ---------- */
+const F={a:0,e:0,r:0,t:0,ias:90,lock:false,spring:true,roll:0,pitch:0,yaw:0,ui:null};
+function simCtl(dt){
+  const lk=F.lock;
+  const a=lk?0:F.a,e=lk?0:F.e,r=lk?0:F.r;
+  const q=Math.pow(F.ias/90,2);
+  const eff=clamp(e+F.t*0.5,-1,1);
+  F.roll=clamp(F.roll+a*55*q*dt,-60,60);
+  F.pitch=clamp(F.pitch+eff*7*q*dt,-25,25);
+  F.yaw=(F.yaw+(r*14*q-a*2.5*q)*dt)%360;
+}
+function surf(e){return e>0?-28*e:-23*e}   // degrees, up negative handled by caller
+build.ctrl=function(){
+  const {fig,side}=mkSection('ctrl','Flight controls',
+    'Ailerons, a one-piece stabilator and a rudder, all joined to the cockpit by cables and push-pull tubes. No power is needed, so they work even if every electrical system has failed. Move a control and see both the surface and the aircraft respond.');
+  const svg=mkSvg(fig,760,560,'Top view of the aircraft showing aileron, elevator, rudder and trim tab deflection, with roll, pitch and yaw response views below');
+  const g=sv('g',null,svg);const f=F.ui={};
+  tx(g,380,20,'Control surfaces, seen from above',{s:14,w:600});
+  const st='var(--metal)',fl='var(--raise)';
+  sv('path',{d:'M380 36C395 36 402 52 403 80L405 150L395 250L388 288L380 292L372 288L365 250L355 150L357 80C358 52 365 36 380 36Z',fill:fl,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'356,110 90,118 90,176 356,176',fill:fl,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'404,110 670,118 670,176 404,176',fill:fl,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'366,244 270,250 270,270 366,270',fill:fl,stroke:st,'stroke-width':2},g);
+  sv('polygon',{points:'394,244 490,250 490,270 394,270',fill:fl,stroke:st,'stroke-width':2},g);
+  f.ailL=sv('rect',{x:90,y:162,width:100,height:14,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+  f.ailR=sv('rect',{x:570,y:162,width:100,height:14,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+  f.eleL=sv('rect',{x:270,y:270,width:96,height:14,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+  f.eleR=sv('rect',{x:394,y:270,width:96,height:14,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+  f.tab=sv('rect',{x:430,y:284,width:40,height:7,fill:'var(--oil)',stroke:'var(--ink)'},g);
+  f.rud=sv('g',{transform:'translate(380 270)'},g);sv('rect',{x:-3,y:0,width:6,height:26,fill:'var(--ink)'},f.rud);
+  sv('circle',{cx:380,cy:270,r:4,fill:'var(--ink)'},g);
+  sv('ellipse',{cx:380,cy:34,rx:60,ry:4,fill:'var(--metal)',opacity:.3},g);
+  f.tAL=tx(g,140,196,'',{s:12,w:600});f.tAR=tx(g,620,196,'',{s:12,w:600});
+  f.tE=tx(g,160,296,'',{s:12,w:600});f.tR=tx(g,380,314,'',{s:12,w:600});f.tT=tx(g,570,296,'',{s:12,w:600});
+  tx(g,140,104,'Left aileron',{s:12,c:'var(--mute)'});tx(g,620,104,'Right aileron',{s:12,c:'var(--mute)'});
+  tx(g,160,240,'Stabilator',{s:12,c:'var(--mute)'});tx(g,570,262,'Anti-servo and trim tab',{s:12,c:'var(--mute)'});
+  tx(g,430,316,'Rudder',{s:12,c:'var(--mute)',a:'start'});
+  // response panels
+  const P=[[135,'Roll (rear view)'],[380,'Pitch (side view)'],[625,'Yaw (top view)']];
+  P.forEach((p,i)=>{box(g,p[0]-115,336,230,206,{rx:12,f:'var(--gface)'});tx(g,p[0],358,p[1],{s:13,w:600})});
+  // roll (rear view, low wing)
+  line(g,28,452,242,452,'var(--metal)',1.5,{'stroke-dasharray':'5 5'});
+  f.roll=sv('g',{transform:'translate(135 452)'},g);
+  line(f.roll,-34,14,-30,34,'var(--ink)',2);line(f.roll,34,14,30,34,'var(--ink)',2);
+  sv('ellipse',{cx:0,cy:-6,rx:14,ry:24,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.roll);
+  sv('rect',{x:-3,y:-56,width:6,height:26,fill:'var(--raise)',stroke:'var(--ink)'},f.roll);
+  sv('rect',{x:-26,y:-26,width:52,height:4,fill:'var(--raise)',stroke:'var(--ink)'},f.roll);
+  sv('rect',{x:-86,y:8,width:172,height:7,rx:3,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.roll);
+  [-30,30].forEach(x=>sv('circle',{cx:x,cy:37,r:7,fill:'var(--ink)'},f.roll));
+  f.rAL=sv('rect',{x:-86,y:15,width:26,height:4,fill:'var(--metal2)',stroke:'var(--ink)','stroke-width':.5},f.roll);
+  f.rAR=sv('rect',{x:60,y:15,width:26,height:4,fill:'var(--metal2)',stroke:'var(--ink)','stroke-width':.5},f.roll);
+  f.tRoll=tx(g,135,520,'',{s:13,w:600});
+  // pitch (side view, low wing, stabilator)
+  line(g,275,452,485,452,'var(--metal)',1.5,{'stroke-dasharray':'5 5'});
+  f.pitch=sv('g',{transform:'translate(380 452)'},g);
+  sv('path',{d:'M72 4L52 -12L-10 -14L-74 -6L-74 6L-10 14L52 14Z',fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.pitch);
+  sv('path',{d:'M-2 -13L12 -28L42 -28L54 -12',fill:'var(--glass)',stroke:'var(--ink)','stroke-width':2},f.pitch);
+  sv('polygon',{points:'-74,-6 -88,-42 -66,-42 -48,-12',fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.pitch);
+  sv('rect',{x:-8,y:8,width:50,height:6,rx:3,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.pitch);
+  line(f.pitch,26,14,26,30,'var(--ink)',2);sv('circle',{cx:26,cy:34,r:7,fill:'var(--ink)'},f.pitch);
+  line(f.pitch,58,12,58,30,'var(--ink)',2);sv('circle',{cx:58,cy:34,r:6,fill:'var(--ink)'},f.pitch);
+  sv('ellipse',{cx:76,cy:2,rx:3,ry:22,fill:'var(--metal)',opacity:.5},f.pitch);
+  f.elevS=sv('g',{transform:'translate(-62 3)'},f.pitch);
+  sv('rect',{x:-20,y:-2.5,width:28,height:5,rx:2,fill:'var(--metal2)',stroke:'var(--ink)','stroke-width':1.5},f.elevS);
+  sv('rect',{x:-27,y:-1.5,width:7,height:3,fill:'var(--oil)',stroke:'var(--ink)','stroke-width':.5},f.elevS);
+  f.tPitch=tx(g,380,520,'',{s:13,w:600});
+  // yaw
+  line(g,625,372,625,500,'var(--metal)',1.5,{'stroke-dasharray':'5 5'});
+  f.yaw=sv('g',{transform:'translate(625 450)'},g);
+  sv('ellipse',{cx:0,cy:0,rx:9,ry:54,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.yaw);
+  sv('rect',{x:-76,y:-22,width:152,height:22,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.yaw);
+  sv('rect',{x:-28,y:38,width:56,height:12,fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},f.yaw);
+  f.rudY=sv('g',{transform:'translate(0 52)'},f.yaw);sv('rect',{x:-2,y:0,width:4,height:16,fill:'var(--ink)'},f.rudY);
+  f.tYaw=tx(g,625,520,'',{s:13,w:600});
+
+  const c0=card(side,'What is happening');f.say=saybox(c0);
+  const c1=card(side,'Controls');
+  const rs=[];
+  rs.push(rng('ctrl',c1,'Yoke: roll',-100,100,1,()=>F.a*100,v=>F.a=v/100,v=>Math.abs(v)<2?'Neutral':(v>0?'Right ':'Left ')+f0(Math.abs(v))+'%'));
+  rs.push(rng('ctrl',c1,'Yoke: pitch',-100,100,1,()=>F.e*100,v=>F.e=v/100,v=>Math.abs(v)<2?'Neutral':(v>0?'Pull back ':'Push forward ')+f0(Math.abs(v))+'%'));
+  rs.push(rng('ctrl',c1,'Rudder pedals',-100,100,1,()=>F.r*100,v=>F.r=v/100,v=>Math.abs(v)<2?'Neutral':(v>0?'Right pedal ':'Left pedal ')+f0(Math.abs(v))+'%'));
+  const keys=['a','e','r'];
+  rs.forEach((inp,i)=>{inp.addEventListener('pointerup',()=>{if(F.spring)F[keys[i]]=0});});
+  rng('ctrl',c1,'Trim wheel',-100,100,1,()=>F.t*100,v=>F.t=v/100,v=>Math.abs(v)<2?'Neutral':(v>0?'Nose up ':'Nose down ')+f0(Math.abs(v))+'%');
+  rng('ctrl',c1,'Airspeed',40,120,1,()=>F.ias,v=>F.ias=v,v=>f0(v)+' KIAS');
+  sw('ctrl',c1,'Let go returns controls to neutral',()=>F.spring,v=>F.spring=v,'air');
+  sw('ctrl',c1,'Control lock fitted',()=>F.lock,v=>F.lock=v,'bad');
+  const bb=el('div',{class:'btns'},c1);btn(bb,'Level the aircraft',()=>{F.roll=0;F.pitch=0;F.yaw=0});
+  const c2=card(side,'From cockpit to surface');f.chain=chain(c2);
+  const c3=card(side,'Handy facts');
+  facts(c3,['Ailerons roll the aircraft, the stabilator pitches it and the rudder yaws it. The rudder is for coordination and crosswinds, not for turning on its own.','Cables and push-pull tubes connect everything: no hydraulics, no electrics.','The tailplane is a stabilator: the whole surface pivots, instead of a fixed stabilizer with a hinged elevator.','An anti-servo tab on its trailing edge moves the same way as the stabilator. That stiffens the control, and the trim wheel moves the same tab to set the neutral position.','Control effectiveness falls with the square of airspeed, so controls feel soft and need bigger movements near the stall.','There is no in-flight rudder trim. On the ground the rudder pedals also steer the nosewheel.']);
+};
+draw.ctrl=function(dt){
+  const f=F.ui;const lk=F.lock;
+  const a=lk?0:F.a,e=lk?0:F.e,r=lk?0:F.r;
+  const aR=a>0?-20*a:-14*a, aL=a>0?14*a:20*a;      // + is trailing edge down (right aileron up when a>0)
+  const rightA=a>0?-20*a:14*(-a), leftA=a>0?14*a:-20*(-a);
+  const eff=clamp(e+F.t*0.5,-1,1);
+  const elev=eff>0?-28*eff:23*(-eff);               // + down
+  const tab=F.t*10;                                  // + down for nose-up trim
+  const col=d=>d<-1?'var(--hyd)':d>1?'var(--fuel)':'var(--metal2)';
+  const lab=d=>Math.abs(d)<1?'':(d<0?'UP ':'DOWN ')+f0(Math.abs(d))+'\u00b0';
+  f.ailL.setAttribute('fill',col(leftA));f.ailR.setAttribute('fill',col(rightA));
+  f.ailL.setAttribute('transform','translate(0 '+(leftA*0.3).toFixed(1)+')');f.ailR.setAttribute('transform','translate(0 '+(rightA*0.3).toFixed(1)+')');
+  const pc=v=>f0(Math.abs(v)*100)+'%';
+  f.tAL.textContent=a>0.02?'DOWN '+pc(a*0.7):a<-0.02?'UP '+pc(a):'';f.tAR.textContent=a>0.02?'UP '+pc(a):a<-0.02?'DOWN '+pc(a*0.7):'';
+  f.eleL.setAttribute('fill',col(elev));f.eleR.setAttribute('fill',col(elev));
+  f.eleL.setAttribute('transform','translate(0 '+(elev*0.2).toFixed(1)+')');f.eleR.setAttribute('transform','translate(0 '+(elev*0.2).toFixed(1)+')');
+  f.tE.textContent=Math.abs(eff)<0.02?'':'Trailing edge '+(eff>0?'UP ':'DOWN ')+pc(eff);
+  f.tab.setAttribute('transform','translate(0 '+(tab*0.3).toFixed(1)+')');f.tT.textContent=Math.abs(F.t)>0.02?'Trim tab '+(F.t>0?'DOWN ':'UP ')+pc(F.t):'';
+  const rd=16*r;f.rud.setAttribute('transform','translate(380 270) rotate('+(-rd*1.4).toFixed(1)+')');
+  f.tR.textContent=Math.abs(r)<0.02?'':(r>0?'RIGHT ':'LEFT ')+pc(r);
+  // responses
+  f.roll.setAttribute('transform','translate(135 452) rotate('+F.roll.toFixed(1)+')');
+  f.rAL.setAttribute('transform','translate(0 '+(leftA*0.2).toFixed(1)+')');f.rAR.setAttribute('transform','translate(0 '+(rightA*0.2).toFixed(1)+')');
+  f.pitch.setAttribute('transform','translate(380 452) rotate('+(-F.pitch).toFixed(1)+')');
+  f.elevS.setAttribute('transform','translate(-62 3) rotate('+(eff*14).toFixed(1)+')');
+  f.yaw.setAttribute('transform','translate(625 450) rotate('+F.yaw.toFixed(1)+')');
+  f.rudY.setAttribute('transform','translate(0 52) rotate('+(-rd*1.2).toFixed(1)+')');
+  const yw=((F.yaw+540)%360)-180;
+  f.tRoll.textContent=Math.abs(F.roll)<1?'Wings level':'Bank '+f0(Math.abs(F.roll))+'\u00b0 '+(F.roll>0?'right':'left');
+  f.tPitch.textContent=Math.abs(F.pitch)<1?'Level pitch':'Nose '+f0(Math.abs(F.pitch))+'\u00b0 '+(F.pitch>0?'up':'down');
+  f.tYaw.textContent=Math.abs(yw)<1?'No heading change':'Nose '+f0(Math.abs(yw))+'\u00b0 '+(yw>0?'right':'left');
+  // narration
+  let s,steps;
+  const big=Math.max(Math.abs(a),Math.abs(e),Math.abs(r));
+  if(lk){s='The control lock is a pin through the yoke and column. Nothing moves, whatever you do. It must be removed before engine start: a takeoff with it fitted would be fatal.';steps=[['Control lock pin blocks the yoke',true],['The cables and tubes cannot move',true],['No surface can move',true]]}
+  else if(Math.abs(F.t)>0.05&&big<0.05){
+    s='The trim wheel has moved the anti-servo tab '+(F.t>0?'down':'up')+' from its neutral position. Air flowing over the tab holds the stabilator trailing edge '+(F.t>0?'up':'down')+', which keeps the nose '+(F.t>0?'higher':'lower')+' without any pressure on the yoke. That is why a trimmed aircraft flies hands-off.';
+    steps=[['You roll the trim wheel '+(F.t>0?'back':'forward'),true],['The trim cable shifts the neutral position of the anti-servo tab',true],['Airflow on the tab holds the stabilator in the new position',true],['Yoke pressure fades and the aircraft holds its pitch',true]];
+  }
+  else if(Math.abs(a)>=Math.abs(e)&&Math.abs(a)>=Math.abs(r)&&Math.abs(a)>0.05){
+    s='Turning the yoke '+(a>0?'right':'left')+' raises the '+(a>0?'right':'left')+' aileron and lowers the other. The wing with the aileron down makes more lift and rises, the other makes less and drops, so the aircraft rolls '+(a>0?'right':'left')+'. The aileron going up also adds drag, so the nose yaws slightly the wrong way (adverse yaw). Use some rudder to coordinate.';
+    steps=[['You turn the yoke '+(a>0?'right':'left'),true],['Chains and cables carry it to the wings and bellcranks',true],['One aileron goes up, the other down, by different amounts',true],['Lift changes on each wing',true],['The aircraft rolls '+(a>0?'right':'left'),Math.abs(F.roll)>1]];
+  }
+  else if(Math.abs(e)>=Math.abs(r)&&Math.abs(e)>0.05){
+    s='Pulling the yoke back tilts the whole stabilator so its trailing edge rises. The tail is pushed down, so the nose pitches up. Because the entire tailplane moves, it is powerful and small movements are enough. Pitch controls the angle of attack, and with it airspeed and climb.';
+    if(e<0)s='Pushing the yoke forward tilts the stabilator trailing edge down. The tail is pushed up, so the nose pitches down.';
+    steps=[['You '+(e>0?'pull the yoke back':'push the yoke forward'),true],['Push-pull tubes and cables run back to the stabilator',true],['The stabilator trailing edge goes '+(e>0?'up':'down'),true],['The tail is forced '+(e>0?'down':'up'),true],['The nose pitches '+(e>0?'up':'down'),Math.abs(F.pitch)>1]];
+  }
+  else if(Math.abs(r)>0.05){
+    s='Pushing the '+(r>0?'right':'left')+' pedal swings the rudder '+(r>0?'right':'left')+'. The fin is pushed sideways, the tail goes '+(r>0?'left':'right')+' and the nose yaws '+(r>0?'right':'left')+'. On the ground the same pedals steer the nosewheel and, by pressing the tops, apply the brakes.';
+    steps=[['You push the '+(r>0?'right':'left')+' pedal',true],['Cables run the length of the fuselage to the rudder',true],['The rudder swings '+(r>0?'right':'left'),true],['A sideways force acts on the tail',true],['The nose yaws '+(r>0?'right':'left'),Math.abs(yw)>1]];
+  }
+  else{s='All controls are neutral. Move the yoke, the pedals or the trim wheel and watch the surface, then the aircraft. Raise or lower the airspeed to see how the response grows with speed.';steps=[['Move a control to see how it works',false]]}
+  f.say.set(s);f.chain.set(steps);
+};
+resets.push(()=>{F.a=F.e=F.r=F.t=0;F.roll=F.pitch=F.yaw=0;F.lock=false});
+/* ---------- BRAKES & STEERING ---------- */
+const GR={pedL:0,pedR:0,rud:0,park:false,lockP:0,pL:0,pR:0,dpL:0,dpR:0,fluid:1,leak:false,heatL:0,heatR:0,v:0,hd:0,x:0,y:0,steer:0,spin:0,hold:false,ui:null,cv:null,ctx:null,frame:0,cs:null};
+function setPark(v){
+  if(v){GR.park=true;GR.lockP=Math.min(GR.pL,GR.pR)}
+  else{GR.park=false;GR.lockP=0}
+}
+function simGround(dt){
+  const G=GR;
+  if(G.leak)G.fluid=Math.max(0,G.fluid-dt*0.02*(0.3+Math.max(G.pedL,G.pedR)*3));
+  const eff=G.fluid>0.35?1:G.fluid/0.35;
+  const tL=G.pedL*eff,tR=G.pedR*eff;
+  if(G.park)G.lockP=Math.max(G.lockP,Math.min(tL,tR));
+  const lock=G.park?G.lockP:0;
+  const nL=Math.max(tL,lock),nR=Math.max(tR,lock);
+  const oL=G.pL,oR=G.pR;
+  G.pL+=(nL-G.pL)*clamp(dt*10,0,1);G.pR+=(nR-G.pR)*clamp(dt*10,0,1);
+  G.dpL=Math.abs(G.pL-oL)/Math.max(dt,0.001);G.dpR=Math.abs(G.pR-oR)/Math.max(dt,0.001);
+  const fade=h=>1-0.4*Math.max(0,(h-0.7)/0.3);
+  const effL=G.pL*fade(G.heatL),effR=G.pR*fade(G.heatR);
+  const thrust=S.running?clamp((S.rpm-500)/1900,0,1.1):0;
+  const target=thrust*45;
+  let dv=(target-G.v)*0.35;const brk=(effL+effR)/2*16;
+  if(G.v<=0.02)dv=Math.max(0,dv-brk);else dv-=brk;
+  G.v=Math.max(0,G.v+dv*dt);
+  if(G.v<0.02&&dv<=0)G.v=0;
+  G.heatL=clamp(G.heatL+G.pL*dt*(0.01+G.v*0.012)-G.heatL*dt*0.05,0,1);
+  G.heatR=clamp(G.heatR+G.pR*dt*(0.01+G.v*0.012)-G.heatR*dt*0.05,0,1);
+  const delta=clamp(G.rud*30+(effR-effL)*8,-35,35);
+  G.steer+=(delta-G.steer)*clamp(dt*8,0,1);
+  const ms=G.v*0.514;
+  const w=(ms/2.0)*Math.tan(rad(G.steer))*57.3+(effR-effL)*thrust*25;
+  G.hd+=w*dt;
+  G.x+=ms*Math.sin(rad(G.hd))*dt;G.y-=ms*Math.cos(rad(G.hd))*dt;
+  G.spin=(G.spin+ms*dt*190)%360;
+  G.w=w;
+}
+build.brakes=function(){
+  const {fig,side}=mkSection('brakes','Brakes and steering',
+    'Hydraulic disc brakes on the two main wheels, worked by toe pedals on top of the rudder pedals. The same pedals steer the nosewheel directly through linkages. Press a pedal, watch the pressure reach the wheel, then taxi and see how braking one side turns the aircraft.');
+  const svg=mkSvg(fig,760,330,'Brake hydraulic schematic: toe pedals, master cylinders, reservoir, parking brake valve, lines and disc brakes');
+  const g=sv('g',null,svg);const H='var(--hyd)';const b={};
+  box(g,340,10,80,34,{rx:6});b.res=sv('rect',{x:343,y:41,width:74,height:0,fill:H,opacity:.55},g);tx(g,380,31,'Reservoir',{s:12});
+  b.pr1=pipe('brakes',g,'M380 44V68H280V100',H,4);b.pr2=pipe('brakes',g,'M380 68H480V100',H,4);
+  [['L',250,'Left'],['R',450,'Right']].forEach(m=>{
+    const x=m[1];box(g,x,100,60,50,{rx:8});tx(g,x+30,122,m[2],{s:12,w:600});tx(g,x+30,138,'master cyl.',{s:10,c:'var(--mute)'});
+    b['pad'+m[0]]=sv('g',null,g);box(b['pad'+m[0]],x+10,64,40,24,{rx:6,f:'var(--ink)',s:'var(--ink)'});line(b['pad'+m[0]],x+30,88,x+30,100,'var(--metal)',4);
+    tx(g,x+30,58,'Toe pedal',{s:11,c:'var(--mute)'});
+    b['t'+m[0]]=tx(g,m[0]==='L'?x-8:x+68,130,'',{a:m[0]==='L'?'end':'start',s:13,w:700});
+  });
+  b.handle=sv('g',{class:'hot',tabindex:0,role:'button','aria-label':'Parking brake handle'},g);
+  line(b.handle,380,100,380,128,'var(--metal)',3);box(b.handle,360,128,40,18,{rx:6,f:'var(--ink)',s:'var(--ink)'});
+  tx(g,380,164,'Parking brake',{s:11,c:'var(--mute)'});
+  b.handle.onclick=()=>setPark(!GR.park);b.handle.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setPark(!GR.park)}};
+  line(g,310,176,450,176,'var(--metal)',1.5,{'stroke-dasharray':'4 4'});
+  box(g,262,168,36,22,{rx:4,f:'var(--metal2)'});tx(g,280,183,'valve',{s:10});box(g,462,168,36,22,{rx:4,f:'var(--metal2)'});tx(g,480,183,'valve',{s:10});
+  b.lL=pipe('brakes',g,'M280 150V240H110V262',H,5);b.lR=pipe('brakes',g,'M480 150V240H650V262',H,5);
+  [['L',110,'Left main wheel'],['R',650,'Right main wheel']].forEach(w=>{
+    const x=w[1];box(g,x-16,262,32,62,{rx:8,f:'var(--ink)',s:'var(--ink)'});
+    b['disc'+w[0]]=sv('circle',{cx:x,cy:293,r:11,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+    b['cal'+w[0]]=sv('rect',{x:w[0]==='L'?x+8:x-22,y:281,width:14,height:24,rx:3,fill:'var(--metal2)',stroke:'var(--ink)'},g);
+    tx(g,x+(w[0]==='L'?40:-40),290,w[2],{a:w[0]==='L'?'start':'end',s:12,c:'var(--mute)'});tx(g,x+(w[0]==='L'?40:-40),306,'disc and caliper',{a:w[0]==='L'?'start':'end',s:10,c:'var(--mute)'});
+  });
+  b.nose=sv('g',{transform:'translate(380 296)'},g);box(b.nose,-8,-24,16,48,{rx:5,f:'var(--ink)',s:'var(--ink)'});
+  tx(g,380,326,'Nosewheel',{s:11,c:'var(--mute)'});b.nT=tx(g,380,236,'',{s:12,w:600});
+  tx(g,380,254,'steered by the rudder pedals',{s:10,c:'var(--mute)'});
+  line(g,380,258,380,266,'var(--metal)',2);
+  b.tP=tx(g,380,206,'',{s:12,w:600});
+  GR.ui=b;
+  // ground canvas
+  const fig2=el('div',{style:'margin-top:8px'},fig);
+  const cv=el('canvas',{width:760,height:240,role:'img','aria-label':'Top view of the aircraft taxiing on an apron'},fig2);
+  GR.cv=cv;GR.ctx=cv.getContext?cv.getContext('2d'):null;
+
+  const c0=card(side,'What is happening');b.say=saybox(c0);
+  const c1=card(side,'Pedals');
+  const rs=[];
+  rs.push(rng('brakes',c1,'Left toe brake',0,100,1,()=>GR.pedL*100,v=>GR.pedL=v/100,v=>f0(v)+'%'));
+  rs.push(rng('brakes',c1,'Right toe brake',0,100,1,()=>GR.pedR*100,v=>GR.pedR=v/100,v=>f0(v)+'%'));
+  rs.push(rng('brakes',c1,'Rudder pedals (nosewheel steering)',-100,100,1,()=>GR.rud*100,v=>GR.rud=v/100,v=>Math.abs(v)<2?'Centered':(v>0?'Right ':'Left ')+f0(Math.abs(v))+'%'));
+  const ks=['pedL','pedR','rud'];
+  rs.forEach((inp,i)=>inp.addEventListener('pointerup',()=>{if(!GR.hold)GR[ks[i]]=0}));
+  sw('brakes',c1,'Pedals stay where I leave them',()=>GR.hold,v=>GR.hold=v,'air');
+  sw('brakes',c1,'Parking brake set',()=>GR.park,v=>setPark(v),'hyd');
+  el('p',{class:'note'},c1).textContent='To set it for real: press both toe brakes, pull the handle, then release the pedals. Pulling it with the pedals up traps no pressure.';
+  const c2=card(side,'Taxi');
+  const b0=el('div',{class:'btns'},c2);btn(b0,'Start the engine',quickStart,'primary');btn(b0,'Stop here',()=>{GR.v=0});btn(b0,'Reset position',()=>{GR.x=0;GR.y=0;GR.hd=0;GR.v=0});
+  rng('brakes',c2,'Throttle',0,100,1,()=>S.thr,v=>S.thr=v,v=>v<3?'Closed':f0(v)+'%');
+  const c3=card(side,'Faults');
+  sw('brakes',c3,'Brake fluid leak',()=>GR.leak,v=>GR.leak=v,'bad');
+  const bb=el('div',{class:'btns'},c3);btn(bb,'Refill reservoir',()=>{GR.fluid=1});
+  const c4=card(side,'From pedal to wheel');b.chain=chain(c4);
+  const c5=card(side,'Handy facts');
+  facts(c5,['Each main wheel has its own disc brake, so left and right can be braked independently.','The nosewheel has no brake. The rudder pedals steer it directly, about 30 degrees each way, and a touch of differential braking tightens a turn further.','Fluid cannot be squashed, so pressure made at the pedal reaches the caliper at once. A soft pedal means air or low fluid.','Brakes turn motion into heat. Riding them while taxiing overheats the discs and they fade.','Check the brakes as soon as you start to roll.','In the air the nosewheel is held straight, so the pedals move only the rudder.']);
+};
+function cssv(n){return GR.cs.getPropertyValue(n).trim()}
+draw.brakes=function(dt){
+  const b=GR.ui,G=GR;
+  b.res.setAttribute('height',(30*G.fluid).toFixed(1));b.res.setAttribute('y',(41-30*G.fluid).toFixed(1));
+  b.padL.setAttribute('transform','translate(0 '+(G.pedL*12).toFixed(1)+')');b.padR.setAttribute('transform','translate(0 '+(G.pedR*12).toFixed(1)+')');
+  b.lL.set(G.dpL>0.4?clamp(G.dpL*40,15,80):0);b.lR.set(G.dpR>0.4?clamp(G.dpR*40,15,80):0);
+  b.pr1.set(G.dpL>0.4?25:0);b.pr2.set(G.dpR>0.4?25:0);
+  b.tL.textContent=G.pL>0.02?f0(G.pL*100)+'%':'';b.tR.textContent=G.pR>0.02?f0(G.pR*100)+'%':'';
+  b.handle.setAttribute('transform','translate(0 '+(G.park?-14:0)+')');
+  b.cal && 0;
+  const heat=h=>'rgb('+Math.round(120+135*h)+','+Math.round(130-90*h)+','+Math.round(140-110*h)+')';
+  b.discL.setAttribute('fill',heat(G.heatL));b.discR.setAttribute('fill',heat(G.heatR));
+  b.calL.setAttribute('fill',G.pL>0.05?'var(--hyd)':'var(--metal2)');b.calR.setAttribute('fill',G.pR>0.05?'var(--hyd)':'var(--metal2)');
+  b.calL.setAttribute('opacity',G.pL>0.05?(0.4+0.6*G.pL):1);b.calR.setAttribute('opacity',G.pR>0.05?(0.4+0.6*G.pR):1);
+  b.nose.setAttribute('transform','translate(380 296) rotate('+G.steer.toFixed(1)+')');
+  b.nT.textContent='Nosewheel angle '+f0(Math.abs(G.steer))+'\u00b0'+(Math.abs(G.steer)<1?'':G.steer>0?' right':' left');
+  b.tP.textContent=G.park?(G.lockP>0.05?'Parking brake holding '+f0(G.lockP*100)+'% pressure':'Handle pulled, but no pressure trapped'):'';
+  b.tP.setAttribute('fill',G.park&&G.lockP<=0.05?'var(--bad)':'var(--ink)');
+  // canvas
+  if(G.ctx){
+    if(!G.cs||(G.frame++%30===0))G.cs=getComputedStyle(document.documentElement);
+    const x=G.ctx,W=760,Hh=240,sc=9,gs=10*sc;
+    x.fillStyle=cssv('--gface');x.fillRect(0,0,W,Hh);
+    const ox=G.x*sc,oy=G.y*sc;
+    x.strokeStyle=cssv('--hair');x.lineWidth=1;x.beginPath();
+    const mx=((ox%gs)+gs)%gs,my=((oy%gs)+gs)%gs;
+    for(let k=-10;k<=10;k++){const px=W/2-mx+k*gs;x.moveTo(px,0);x.lineTo(px,Hh);const py=Hh/2-my+k*gs;x.moveTo(0,py);x.lineTo(W,py)}
+    x.stroke();
+    x.strokeStyle='#e7b928';x.lineWidth=3;x.setLineDash([22,16]);x.beginPath();const lx=W/2-ox;x.moveTo(lx,0);x.lineTo(lx,Hh);x.stroke();x.setLineDash([]);
+    const hs=Hh/2+(-80*sc-oy);x.strokeStyle='#d6453a';x.lineWidth=4;x.beginPath();x.moveTo(0,hs);x.lineTo(W,hs);x.stroke();
+    x.fillStyle=cssv('--mute');x.font='12px sans-serif';x.textAlign='left';x.fillText('Hold short line',10,hs-6);
+    x.save();x.translate(W/2,Hh/2);x.rotate(rad(G.hd));
+    x.fillStyle=cssv('--raise');x.strokeStyle=cssv('--ink');x.lineWidth=2;
+    x.fillRect(-5.1*sc,-1.7*sc,10.2*sc,1.5*sc);x.strokeRect(-5.1*sc,-1.7*sc,10.2*sc,1.5*sc);
+    x.fillRect(-1.7*sc,2.5*sc,3.4*sc,1*sc);x.strokeRect(-1.7*sc,2.5*sc,3.4*sc,1*sc);
+    x.beginPath();x.ellipse(0,0,0.6*sc,3.3*sc,0,0,Math.PI*2);x.fill();x.stroke();
+    x.beginPath();x.moveTo(0,2.6*sc);x.lineTo(0,3.6*sc);x.stroke();
+    [[-1.3,G.pL,G.heatL],[1.3,G.pR,G.heatR]].forEach(w=>{const h=w[2];x.fillStyle=w[1]>0.05?'#d6453a':'rgb('+Math.round(40+200*h)+','+Math.round(40+60*(1-h))+',40)';x.fillRect(w[0]*sc-0.18*sc,-0.5*sc,0.36*sc,1.1*sc)});
+    x.save();x.translate(0,-2.4*sc);x.rotate(rad(G.steer));x.fillStyle=cssv('--ink');x.fillRect(-0.15*sc,-0.4*sc,0.3*sc,0.8*sc);x.restore();
+    x.fillStyle='rgba(120,130,140,.35)';x.beginPath();x.ellipse(0,-3.3*sc,0.15*sc,3.1*sc,0,0,Math.PI*2);x.fill();
+    x.restore();
+    x.fillStyle=cssv('--ink');x.font='600 15px sans-serif';x.fillText('Ground speed '+f0(G.v)+' kt',12,22);
+    x.fillText('Heading change '+f0((((G.hd%360)+360)%360))+'\u00b0',12,42);
+  }
+  let s;
+  const avg=(G.pL+G.pR)/2,diff=G.pR-G.pL;
+  if(G.fluid<0.35&&Math.max(G.pedL,G.pedR)>0.1)s='The reservoir is low, so the pedal feels soft and the brake pressure is weak. Refill and check for the leak before moving.';
+  else if(G.park&&G.lockP>0.05&&G.v<0.5)s='The parking brake has trapped pressure in both lines, so the brakes stay applied with your feet off the pedals.'+(S.running&&S.thr>60?' At this power the engine can overpower them.':'');
+  else if(G.park&&G.lockP<=0.05)s='The handle is pulled but the pedals were not pressed, so no pressure was trapped and the brakes will not hold. Press both pedals, then pull.';
+  else if(Math.abs(diff)>0.15&&(G.v>0.5||S.running))s='Braking the '+(diff>0?'right':'left')+' wheel more than the other drags that side back, so the aircraft turns '+(diff>0?'right':'left')+'. This differential braking tightens turns on the ground.';
+  else if(avg>0.1&&G.v>0.3)s='Both brakes are on. Fluid pressure is clamping the pads on the discs, turning motion into heat. The discs are '+f0(Math.max(G.heatL,G.heatR)*100)+'% heat-soaked.';
+  else if(avg>0.1)s='Pedal pressure moves fluid to the calipers and the discs are clamped. The aircraft is held.';
+  else if(Math.abs(G.rud)>0.05&&G.v>0.3)s='The rudder pedals are linked straight to the nosewheel, which turns up to about 30 degrees each way. A bigger angle gives a tighter turn, so taxi slowly when turning hard.';
+  else if(!S.running)s='The engine is stopped, so the aircraft is stationary. Start the engine, add a little throttle and the aircraft will taxi. Use the pedals to steer and brake.';
+  else s='Brakes are released and the aircraft is rolling at '+f0(G.v)+' kt. Idle thrust alone moves it, so taxi with a little power and use brakes sparingly.';
+  b.say.set(s);
+  b.chain.set([['You push the top of a rudder pedal',G.pedL>0.03||G.pedR>0.03],['The pedal pushes the master cylinder piston',G.pedL>0.03||G.pedR>0.03],
+    ['Pressure travels through the fluid line to the wheel',G.pL>0.03||G.pR>0.03],['The caliper pistons squeeze the pads onto the disc',G.pL>0.05||G.pR>0.05],
+    ['Friction slows the wheel and turns motion into heat',(G.pL>0.05||G.pR>0.05)&&G.v>0.3],['A pulled parking brake handle traps the pressure',G.park&&G.lockP>0.05]]);
+};
+resets.push(()=>{Object.assign(GR,{pedL:0,pedR:0,rud:0,park:false,lockP:0,pL:0,pR:0,fluid:1,leak:false,heatL:0,heatR:0,v:0,hd:0,x:0,y:0,steer:0})});
+/* ---------- PITOT-STATIC & VACUUM ---------- */
+const P={ias:90,vs:0,alt:3000,pitot:'ok',stat:false,altStat:false,icing:false,iceT:0,v0:0,a0:0,s0:0,vsI:0,vac:0,pump:true,spin:1,herr:0,t:0,ui:null};
+function simPitot(dt){
+  P.t+=dt;
+  P.alt=clamp(P.alt+P.vs/60*dt,0,14000);
+  // icing
+  if(P.icing&&!(S.loadOn&&S.loadOn.pitotHeat)&&P.pitot==='ok'){P.iceT+=dt;if(P.iceT>6){P.pitot='iced';P.v0=P.ias;P.a0=P.alt}}
+  else if(P.pitot==='iced'&&S.loadOn&&S.loadOn.pitotHeat){P.iceT=0;P.pitot='ok'}
+  else if(!P.icing)P.iceT=Math.max(0,P.iceT-dt);
+  // vacuum
+  const target=P.pump?clamp(S.rpm/1000,0,1)*5.0:0;
+  P.vac+=(target-P.vac)*clamp(dt*2,0,1);
+  const sp=P.vac>=3.5?1:P.vac/3.5;
+  if(sp>P.spin)P.spin=Math.min(sp,P.spin+dt/8);else P.spin=Math.max(sp,P.spin-dt/25);
+  P.herr+=(1-P.spin)*dt*8;
+  P.vsI+=((P.stat?0:P.vs)-P.vsI)*clamp(dt/4,0,1);
+}
+function pitotSet(v){
+  if(v==='block'||v==='ok'){}
+  P.pitot=v;if(v==='block'){P.v0=P.ias;P.a0=P.alt}
+}
+function statSet(v){P.stat=v;if(v)P.s0=P.alt}
+function asiRead(){
+  const c=12;
+  let v2;
+  if(P.pitot==='drain')return 0;
+  if(P.pitot==='block'||P.pitot==='iced')v2=P.v0*P.v0+c*(P.alt-P.a0);
+  else v2=P.ias*P.ias;
+  if(P.stat)v2-=c*(P.alt-P.s0);
+  if(!P.stat&&P.altStat)v2+=60;
+  return Math.sqrt(Math.max(0,v2));
+}
+function altRead(){return P.stat?P.s0:P.alt+(P.altStat?60:0)}
+
+build.pitot=function(){
+  const {fig,side}=mkSection('pitot','Pitot-static and vacuum systems',
+    'Two separate systems feed the flight instruments. Air pressure from the pitot tube and static ports drives the airspeed indicator, altimeter and vertical speed indicator. An engine-driven pump creates suction that spins the gyros. Block or break something and see which instruments lie.');
+  const svg=mkSvg(fig,760,580,'Pitot tube, static port and instruments on the left, vacuum pump and gyro instruments on the right');
+  const g=sv('g',null,svg);const p={};const A='var(--air)';
+  tx(g,190,22,'Pitot-static system',{s:14,w:600});tx(g,570,22,'Vacuum system',{s:14,w:600});
+  // pitot tube + static
+  sv('path',{d:'M26 70H80L96 78L80 86H26Z',fill:'var(--raise)',stroke:'var(--ink)','stroke-width':2},g);
+  p.tip=sv('circle',{cx:98,cy:78,r:5,fill:'var(--ink)'},g);p.ice=sv('circle',{cx:102,cy:78,r:0,fill:'#fff',stroke:'var(--metal)'},g);
+  tx(g,60,60,'Pitot tube',{s:12});tx(g,70,104,'(under the left wing)',{s:10,c:'var(--mute)'});
+  p.pheat=tx(g,60,122,'',{s:11,c:'var(--elec)',w:600});
+  box(g,16,150,62,36,{rx:6});tx(g,47,172,'Static port',{s:11});tx(g,40,200,'(each side of',{s:10,c:'var(--mute)'});tx(g,40,212,'the fuselage)',{s:10,c:'var(--mute)'});
+  p.sx=tx(g,40,230,'',{s:12,c:'var(--bad)',w:700});
+  p.pp=pipe('pitot',g,'M26 78H8V250H125',A,5);
+  p.ps=pipe('pitot',g,'M78 168H110V330',A,5);
+  p.ps2=pipe('pitot',g,'M110 270H125',A,5);
+  p.ps3=pipe('pitot',g,'M110 330V440H128',A,5);
+  p.ps4=pipe('pitot',g,'M252 440H288',A,5);
+  // instruments
+  p.asi=gauge(g,190,270,62,{min:0,max:180,a0:-150,a1:150,ticks:[20,40,60,80,100,120,140,160,180].map(v=>[v,v]),bands:[[49,103,'#e8e8e8'],[55,126,'var(--ok)'],[126,160,'var(--warn)'],[160,164,'var(--bad)']],title:'AIRSPEED kt'});
+  p.alt=gauge(g,190,440,62,{min:0,max:1000,a0:0,a1:360,ticks:[0,100,200,300,400,500,600,700,800,900].map(v=>[v,v/100]),title:'ALT 100s ft'});
+  p.vsi=gauge(g,350,440,62,{min:-2000,max:2000,a0:-150,a1:150,ticks:[[-2000,'2'],[-1000,'1'],[0,'0'],[1000,'1'],[2000,'2']],title:'VSI x1000'});
+  tx(g,252,305,'',{s:10});
+  p.altT=tx(g,190,530,'',{s:14,w:700});
+  p.altT2=tx(g,350,530,'',{s:12,c:'var(--mute)'});
+  tx(g,350,280,'Alternate static',{s:11,c:'var(--mute)'});tx(g,350,294,'(cabin air)',{s:10,c:'var(--mute)'});
+  p.alt2=tx(g,350,312,'',{s:12,w:700});
+  // vacuum side
+  box(g,470,40,120,40,{rx:8});tx(g,530,64,'Engine-driven pump',{s:12,w:600});
+  p.pumpT=tx(g,530,96,'',{s:11,c:'var(--bad)',w:700});
+  box(g,470,120,120,34,{rx:8});tx(g,530,142,'Vacuum regulator',{s:12});
+  p.v1=pipe('pitot',g,'M530 120V80',A,6);p.v2=pipe('pitot',g,'M530 215V154',A,6);
+  p.v3=pipe('pitot',g,'M650 215H530',A,6);p.v4=pipe('pitot',g,'M530 414V215',A,5);p.v5=pipe('pitot',g,'M650 426V215',A,5);
+  tx(g,540,236,'Cabin air is drawn',{a:'start',s:10,c:'var(--mute)'});tx(g,540,248,'through the instruments',{a:'start',s:10,c:'var(--mute)'});
+  p.suc=gauge(g,680,100,50,{min:0,max:10,ticks:[0,2,4,6,8,10].map(v=>[v,v]),bands:[[4.5,5.5,'var(--ok)'],[0,3.5,'var(--bad)']],title:'SUCTION inHg',fmt:v=>v.toFixed(1)});
+  line(g,655,150,655,215,'var(--metal)',2,{'stroke-dasharray':'3 4'});
+  p.ai=sv('g',{transform:'translate(530 470)'},g);
+  sv('circle',{r:56,fill:'var(--gface)',stroke:'var(--metal)','stroke-width':3},p.ai);
+  const clip=sv('clipPath',{id:'aiclip'},g);sv('circle',{cx:530,cy:470,r:53},clip);
+  p.hz=sv('g',{'clip-path':'url(#aiclip)'},g);
+  p.hzr=sv('g',{transform:'translate(530 470)'},p.hz);
+  sv('rect',{x:-140,y:-140,width:280,height:140,fill:'#4a90d9'},p.hzr);sv('rect',{x:-140,y:0,width:280,height:140,fill:'#9a6b3c'},p.hzr);
+  line(p.hzr,-140,0,140,0,'#fff',2);
+  line(g,500,470,520,470,'#ffd84a',4);line(g,540,470,560,470,'#ffd84a',4);sv('circle',{cx:530,cy:470,r:3,fill:'#ffd84a'},g);
+  tx(g,530,540,'Attitude indicator',{s:12,w:600});
+  p.hi=sv('g',{transform:'translate(650 470)'},g);
+  sv('circle',{r:44,fill:'var(--gface)',stroke:'var(--metal)','stroke-width':3},p.hi);
+  p.card=sv('g',null,p.hi);['N','E','S','W'].forEach((c,i)=>{const a=i*90;const q=polar(32,a);tx(p.card,q[0],q[1]+5,c,{s:14,w:700});const q2=polar(44,a);line(p.card,q[0]*1.0,q[1],q2[0],q2[1],'var(--ink)',1)});
+  line(p.hi,0,-44,0,-30,'var(--hyd)',3);
+  tx(g,650,540,'Heading indicator',{s:12,w:600});
+  p.tc=tx(g,650,560,'Turn coordinator is electric: unaffected',{s:10,c:'var(--mute)'});
+  p.gyro=tx(g,590,412,'',{s:12,w:700,c:'var(--bad)'});
+  P.ui=p;
+
+  const c0=card(side,'What is happening');p.say=saybox(c0);
+  const c1=card(side,'Flight');
+  rng('pitot',c1,'Airspeed through the air',0,150,1,()=>P.ias,v=>P.ias=v,v=>f0(v)+' KIAS');
+  rng('pitot',c1,'Climb or descent',-1500,1500,50,()=>P.vs,v=>P.vs=v,v=>(v>0?'+':'')+f0(v)+' fpm');
+  const b0=el('div',{class:'btns'},c1);btn(b0,'Start the engine',quickStart,'primary');btn(b0,'Shut down',shutDown);
+  const c2=card(side,'Pitot and static faults');
+  seg('pitot',c2,'Pitot tube',[['ok','Clear'],['drain','Ram blocked'],['block','Ram and drain blocked']],()=>P.pitot==='iced'?'block':P.pitot,pitotSet);
+  sw('pitot',c2,'Static port blocked',()=>P.stat,statSet,'bad');
+  sw('pitot',c2,'Alternate static source (cabin)',()=>P.altStat,v=>P.altStat=v,'air');
+  sw('pitot',c2,'Flying in icing conditions',()=>P.icing,v=>P.icing=v,'fuel');
+  sw('pitot',c2,'Pitot heat (electrical load)',()=>S.sw.pitotHeat,v=>S.sw.pitotHeat=v,'elec');
+  el('p',{class:'note'},c2).textContent='Pitot heat needs the master switch on and the engine running with the alternator on (or enough battery).';
+  const c3=card(side,'Vacuum fault');
+  sw('pitot',c3,'Vacuum pump failure',()=>!P.pump,v=>P.pump=!v,'bad');
+  const c4=card(side,'Handy facts');
+  facts(c4,['Pitot pressure (ram air) and static pressure meet in the airspeed indicator. The altimeter and vertical speed indicator use static only. The airspeed arcs are white 49 to 103, green 55 to 126, yellow 126 to 160 and a red line at 160 KIAS.','A blocked pitot with the drain hole open makes the airspeed read zero. If the drain is blocked too, the airspeed acts like an altimeter: it reads higher as you climb.','A blocked static port freezes the altimeter and VSI. Airspeed under-reads in a climb and over-reads in a descent. The alternate static source in the cabin is the fix; it reads slightly high.','Vacuum drives the attitude and heading indicators. The suction gauge should be about 4.5 to 5.5 inHg at cruise power.','If the pump fails, the gyros spin down and show wrong attitude without a warning flag. Cross-check against the electric turn coordinator.']);
+};
+draw.pitot=function(dt){
+  const p=P.ui;
+  const asi=asiRead(),alt=altRead();
+  p.asi.set(asi,f0(asi));
+  p.alt.set(((alt%1000)+1000)%1000,'');
+  p.altT.textContent='Altitude '+f0(alt)+' ft';
+  p.vsi.set(P.vsI,(P.vsI>=0?'+':'')+f0(P.vsI));
+  p.altT2.textContent='';
+  p.alt2.textContent=P.altStat?'ON':'OFF';
+  const heat=S.loadOn&&S.loadOn.pitotHeat;
+  p.pheat.textContent=heat?'Heater ON':'';
+  p.ice.setAttribute('r',P.pitot==='iced'?9:(P.iceT>0?Math.min(8,P.iceT*1.2):0));
+  p.sx.textContent=P.stat?'BLOCKED':'';
+  const flow=P.pitot==='drain'?0:clamp(P.ias/3,0,40);
+  p.pp.set(P.pitot==='ok'?flow:0);
+  p.ps.set(P.stat?0:12);p.ps2.set(P.stat?0:12);p.ps3.set(P.stat?0:12);p.ps4.set(P.stat?0:12);
+  const v=P.vac>0.2?clamp(P.vac*8,0,50):0;
+  p.v1.set(v);p.v2.set(v);p.v3.set(v);p.v4.set(v*0.8);p.v5.set(v*0.8);
+  p.suc.set(P.vac,P.vac.toFixed(1));
+  p.pumpT.textContent=P.pump?'':'FAILED';
+  const err=(1-P.spin);
+  const tilt=err*(28*Math.sin(P.t*0.7)+40*Math.sin(P.t*0.31));
+  const shift=err*(18*Math.sin(P.t*0.5));
+  p.hzr.setAttribute('transform','translate(530 '+(470+shift).toFixed(1)+') rotate('+tilt.toFixed(1)+')');
+  p.card.setAttribute('transform','rotate('+(-P.herr).toFixed(1)+')');
+  p.gyro.textContent=err>0.15?'Gyros spinning down: '+f0(P.spin*100)+'%':'';
+  let s;
+  if(P.pitot==='drain')s='The ram air inlet is blocked but the drain hole is open, so the pressure inside leaks away and the airspeed indicator falls toward zero, even though you are flying at '+f0(P.ias)+' KIAS. The altimeter and VSI still work because they use the static port.';
+  else if(P.pitot==='block'||P.pitot==='iced')s='Ram air and the drain hole are both blocked, so the pressure in the line is trapped. The airspeed indicator no longer follows your speed. It now behaves like an altimeter: higher in a climb, lower in a descent. '+(P.pitot==='iced'?'Ice caused this. Pitot heat clears it.':'');
+  else if(P.stat&&!P.altStat)s='The static port is blocked, so the altimeter freezes and the VSI reads zero. The airspeed also errs: it under-reads in a climb and over-reads in a descent. Select the alternate static source in the cabin.';
+  else if(P.altStat&&!P.stat)s='Alternate static is on. Cabin pressure is a little lower than outside, so the instruments read slightly high (about 60 ft and a few knots).';
+  else if(P.icing&&!heat&&P.iceT>0)s='Ice is building on the pitot tube. In a few seconds it will block. Turn the pitot heat on.';
+  else if(P.icing&&heat)s='Pitot heat is warming the tube, so ice cannot build up.';
+  else if(err>0.15)s='The vacuum pump has failed, so the gyros are slowing. The attitude indicator drifts and tumbles and the heading indicator wanders, and neither shows a warning flag. The suction gauge is your clue. Use the turn coordinator and the other instruments.';
+  else if(S.rpm<500)s='The engine is stopped, so there is no vacuum and the gyros are still. Start the engine and watch the suction gauge climb.';
+  else s='Everything is healthy. Ram air reaches the airspeed indicator, static air reaches all three pressure instruments, and the pump holds about '+P.vac.toFixed(1)+' inHg of suction to spin the gyros.';
+  p.say.set(s);
+};
+resets.push(()=>{Object.assign(P,{pitot:'ok',stat:false,altStat:false,icing:false,iceT:0,vac:0,pump:true,spin:1,herr:0,vsI:0})});
+/* ---------- MAIN ---------- */
+function sim(dt){
+  simFuelAvail(dt);
+  simEngine(dt);
+  simFuelBurn(dt);
+  simOil(dt);
+  simElec(dt);
+  simFlap(dt);
+  simGround(dt);
+  simCtl(dt);
+  simPitot(dt);
+}
+
+/* header status strip */
+const STRIP=[
+  ['Battery',()=>S.busLive?f1(S.volts)+' V':'off',()=>S.busLive&&S.volts<12.4?'warn':''],
+  ['RPM',()=>f0(S.rpm),()=>S.rpm>2550?'bad':''],
+  ['Oil psi',()=>f0(S.oilP),()=>S.running&&S.oilP<25?'bad':''],
+  ['Oil \u00b0F',()=>f0(S.oilT),()=>S.oilT>245?'bad':''],
+  ['Fuel gal',()=>f1(S.fuelL+S.fuelR),()=>(S.fuelL+S.fuelR)<4?'warn':''],
+  ['Fuel psi',()=>f1(S.fuelP),()=>S.running&&S.fuelP<0.5?'bad':''],
+  ['Flaps',()=>f0(S.flap)+'\u00b0',()=>'']
+];
+const stripEls=[];
+function buildStrip(){
+  const st=$('#strip');
+  STRIP.forEach(s=>{const c=el('div',{class:'chip'},st,'<small></small><b></b>');c.firstChild.textContent=s[0];stripEls.push(c)});
+}
+function updateStrip(){
+  STRIP.forEach((s,i)=>{const c=stripEls[i];const v=s[1]();const k=s[2]();const b=c.lastChild;
+    if(b._v!==v){b._v=v;b.textContent=v}
+    if(c._k!==k){c._k=k;c.className='chip'+(k?' '+k:'')}});
+}
+
+/* engine sound (optional) */
+const SND={on:false,ctx:null,osc:null,gain:null};
+function toggleSound(){
+  const b=$('#snd');
+  try{
+    if(!SND.ctx){
+      const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+      SND.ctx=new C();const o=SND.ctx.createOscillator();o.type='sawtooth';
+      const f=SND.ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=480;
+      const gn=SND.ctx.createGain();gn.gain.value=0;o.connect(f);f.connect(gn);gn.connect(SND.ctx.destination);o.start();
+      SND.osc=o;SND.gain=gn;
+    }
+    SND.on=!SND.on;
+    if(SND.on&&SND.ctx.state==='suspended')SND.ctx.resume();
+    if(!SND.on)SND.gain.gain.setTargetAtTime(0,SND.ctx.currentTime,0.05);
+    b.textContent=SND.on?'Sound on':'Sound off';b.setAttribute('aria-pressed',SND.on);
+  }catch(e){SND.on=false}
+}
+function updateSound(){
+  if(!SND.on||!SND.ctx)return;
+  const t=SND.ctx.currentTime;
+  SND.osc.frequency.setTargetAtTime(Math.max(8,S.rpm/60*4),t,0.06);
+  SND.gain.gain.setTargetAtTime(S.rpm>25?Math.min(0.2,0.05+S.rpm/2300*0.12):0,t,0.08);
+}
+
+/* loop */
+let last=performance.now();
+function frame(t){
+  const dt=Math.min(0.1,Math.max(0,(t-last)/1000));last=t;
+  try{
+    sim(dt);
+    const d=draw[cur];if(d)d(dt);
+    const sy=syncs[cur];if(sy)for(let i=0;i<sy.length;i++)sy[i]();
+    tickPipes(dt,cur);
+    updateStrip();updateSound();
+  }catch(e){if(!window.__err){window.__err=1;console.error(e)}}
+  requestAnimationFrame(frame);
+}
+
+/* init */
+function init(){
+  const nav=$('#nav');
+  TABS.forEach(t=>{
+    const b=el('button',{type:'button','data-id':t.id},nav);
+    const d=el('span',{class:'dot',style:'background:var(--'+t.c+')'},b);b.append(t.name);
+    b.onclick=()=>show(t.id);
+  });
+  TABS.forEach(t=>build[t.id]());
+  buildStrip();
+  $('#ts').onchange=e=>S.ts=+e.target.value;
+  $('#snd').onclick=toggleSound;
+  const root=document.documentElement;
+  $('#thm').onclick=()=>{
+    const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme=dark?'light':'dark';GR.cs=null;
+  };
+  const h=(location.hash||'').slice(1);
+  show(TABS.some(t=>t.id===h)?h:'home');
+  window.addEventListener('hashchange',()=>{const x=(location.hash||'').slice(1);if(TABS.some(t=>t.id===x)&&x!==cur)show(x)});
+  requestAnimationFrame(frame);
+}
+init();
+</script>
+</body>
+</html>
